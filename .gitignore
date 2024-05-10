@@ -1,5 +1,8 @@
-py-llm-server/environment/
+py_llm_server/environment/
 target/
 .vscode/
 effective-pom.xml
 pom.xml
+py_llm_server/__pycache__
+py_llm_server/interfaces/__pycache__
+py_llm_server/llms/__pycache__

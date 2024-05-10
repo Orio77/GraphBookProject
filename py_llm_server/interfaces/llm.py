@@ -4,7 +4,7 @@ from abc import abstractmethod
 class LLM(ABC):
 
     @abstractmethod
-    def load(self):
+    def calculate_Similarity(self, text1, text2):
         pass
 
     
