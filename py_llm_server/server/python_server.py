@@ -13,15 +13,22 @@ from llms.bert import BERT
 
 app = Flask(__name__)
 
+import json
+
 @app.route('/similarity', methods =['POST'])
 def calculate_similarity():
     data = request.json
+    print("Received JSON: " + json.dumps(data))  # Print received JSON
+
     text1 = data['text1']
     text2 = data['text2']
-    handler = HF_LLMHandler(BERT(model_name='bert-base-uncased'))
+    handler = HF_LLMHandler(BERT(model_name='bert-base-uncased')) # TODO change to phi3 of Ollama's and check the String response, then figure out how to extract a double out of that | Get Phi3 model with admin instruction (Ollama save)
     score = handler.get_Similarity_Score(text1, text2)
 
-    return jsonify({'similarity': score})
+    response = {'similarity': score}
+    print("Sent JSON: " + json.dumps(response))  # Print sent JSON
+
+    return jsonify(response)
 
 def test_handler():
     handler = HF_LLMHandler(BERT(model_name='bert-base-uncased'))
