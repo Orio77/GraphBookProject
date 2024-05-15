@@ -54,7 +54,7 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
-    private void createEdge(PDFText text1, PDFText text2, double similarityScore) {
+    public void createEdge(PDFText text1, PDFText text2, double similarityScore) {
         try (Session session = driver.session()) {
             String content1 = text1.getText();
             String content2 = text2.getText();
@@ -81,7 +81,34 @@ public class NeoDatabase implements IDatabase {
                 createEdge(text1, text2, score);
             }
         }
+        disconnect();
+    }
 
+    public void clearAllEdges() {
+        connect();
+        try (Session session = driver.session()) {
+            session.run("MATCH ()-[r]-() DELETE r");
+        } catch (Neo4jException e) {
+            System.out.println();
+            System.out.println("Neo4j operation failed: " + e.getMessage());
+            System.out.println();
+            throw e;
+        }
+        finally {
+            disconnect();
+        }
+    }
+
+    public void reset() {
+        connect();
+        try (Session session = driver.session()) {
+            session.run("MATCH (n) DETACH DELETE n");
+        } catch (Neo4jException e) {
+            System.out.println();
+            System.out.println("Neo4j operation failed: " + e.getMessage());
+            System.out.println();
+            throw e;
+        }
         disconnect();
     }
 }

@@ -1,3 +1,0 @@
-Class: class java.util.ImmutableCollections$List12
-Time taken: 0.0353386
-Time of creation: 2024-05-08T17:10:34.358709500

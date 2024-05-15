@@ -18,7 +18,6 @@ public class DataSaver {
         long startTime = System.nanoTime();
         Path curPath = Paths.get("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/src/main/java/com/graphbook/files/serialized/object");
         Path dirName = createDir(curPath);
-        System.out.println(dirName.toString());
         boolean res = writeObject(o, dirName);
         if (!res) {
             return false;
@@ -29,10 +28,10 @@ public class DataSaver {
         return true;
     }
 
-    private Path createDir(Path path) {
+    public Path createDir(Path path) {
         try {
             String dirName = getNewDirectoryName(path.toString());
-            Files.createDirectory(Paths.get(dirName));
+            Files.createDirectories(Paths.get(dirName));
             return Paths.get(dirName);
         } catch (IOException e) {
             e.printStackTrace();
@@ -40,11 +39,12 @@ public class DataSaver {
         }
     }
 
-    private Path createFile(String pathAsString, String fileName) {
+    public Path createFile(String pathAsString, String fileName) {
         pathAsString = pathAsString.concat("\\" + fileName + ".txt");
         try {
             Path path = Paths.get(pathAsString);
             Files.createFile(path);
+            Files.write(path, ("Creation date: " + getCreationTime().toString() + "\n").getBytes(), StandardOpenOption.APPEND);
             return path;
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,14 +52,18 @@ public class DataSaver {
         }
     }
 
-    private String getNewDirectoryName(String s) {
+    private LocalDateTime getCreationTime() {
+        return LocalDateTime.now();
+    }
+
+    private String getNewDirectoryName(String pathAsString) {
         int i = 1;
-        String newDirName = s;
+        String newDirName = pathAsString;
         while (true) {
             if (!Files.exists(Paths.get(newDirName))) {
                 return newDirName;
             }
-            newDirName = s.concat("_" + i++);
+            newDirName = pathAsString.concat("_" + i++);
         }
     }
 
@@ -95,9 +99,8 @@ public class DataSaver {
         }
     }
 
-    public void deleteAll() {
-        String directoryPath = "C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/src/main/java/com/graphbook/files/serialized/object";
-        Path dirPath = Paths.get(directoryPath);
+    public void deleteAll(String pathAsString) {
+        Path dirPath = Paths.get(pathAsString);
     
         try {
             Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {
@@ -109,7 +112,9 @@ public class DataSaver {
     
                 @Override
                 public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
+                    if (!dir.equals(dirPath)) {
+                        Files.delete(dir);
+                    }
                     return FileVisitResult.CONTINUE;
                 }
             });

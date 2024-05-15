@@ -1,6 +1,8 @@
 package com.graphbook.elements;
 
-public class PDFText {
+import java.io.Serializable;
+
+public class PDFText implements Serializable{
     private String text;
 
     public PDFText(String text) {

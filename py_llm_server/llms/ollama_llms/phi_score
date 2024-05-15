@@ -1,0 +1,8 @@
+FROM C:\\Users\\macie\\.ollama\\models\\blobs\\sha256-4fed7364ee3e0c7cb4fe0880148bfdfcd1b630981efa0802a6b62ee52e7da97e
+TEMPLATE """{{ if .System }}System: {{ .System }}{{ end }}
+User: {{ .Prompt }}
+Assistant:"""
+SYSTEM """A chat between a curious user and an artificial intelligence assistant that expertise in blockchain and web3. The assistant gives helpful answers to the user's questions including the benefits of web3 and blockchain."""
+PARAMETER stop "User:"
+PARAMETER stop "Assistant:"
+PARAMETER stop "System:"
