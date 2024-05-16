@@ -1,10 +1,10 @@
 package com.graphbook.util.interfaces;
 
-import java.net.URI;
+import java.util.List;
 
 import com.graphbook.elements.PDFText;
 
 public interface IPdfReader {
     
-    public PDFText read(URI absolutePath);
+    public List<PDFText> read();
 }

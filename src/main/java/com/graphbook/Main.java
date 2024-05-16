@@ -6,32 +6,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.graphbook.elements.PDFText;
-import com.graphbook.server.SimilarityClient;
-import com.graphbook.util.CONSTANTS;
-import com.graphbook.util.DataSaver;
+import com.graphbook.server.AISimilarityClient;
+import com.graphbook.util.AISimilarityCalculator;
+import com.graphbook.util.JDataSaver;
 import com.graphbook.util.NeoDatabase;
-import com.graphbook.util.PDFReader;
-import com.graphbook.util.SimilarityCalculator;
+import com.graphbook.util.PDFBoxReader;
 
 public class Main {
     private static final NeoDatabase db = new NeoDatabase();
-    private static final DataSaver saver = new DataSaver();
+    private static final JDataSaver saver = new JDataSaver();
     private static final Path pathToSavedPages = Paths.get("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/src/main/java/com/graphbook/files/serialized/object/saved_object.txt");
     private static final String pathToPDF = "C:/Users/macie/Downloads/12-Rules-for-Life.pdf";
 
 
     public static void main(String[] args) {
         // db.clearAllEdges();
-        testDatabaseEdgeCreationWithLLMScore();
+        // testDatabaseEdgeCreationWithLLMScore();
         // new DataSaver().deleteAll(CONSTANTS.ERROR_LOG_PATH.toString());
+        testLoadingAndParsingPages();
     }
 
 
     private static void testLoadingAndParsingPages() {
 
-        PDFReader reader = new PDFReader();
+        PDFBoxReader reader = new PDFBoxReader();
         List<PDFText> pages = new ArrayList<>();
-        pages = reader.readPages("C:/Users/macie/Downloads/12-Rules-for-Life.pdf");
+        pages = reader.read();
 
         System.out.println();
         System.out.println();
@@ -57,7 +57,7 @@ public class Main {
         // PDFReader reader = new PDFReader();
         // pages = reader.readPages("C:/Users/macie/Downloads/12-Rules-for-Life.pdf");
 
-        pages = (List<PDFText>) saver.readObject(pathToSavedPages);
+        pages = (List<PDFText>) saver.loadPDF();
         db.save(pages);
 
         db.disconnect();
@@ -68,13 +68,13 @@ public class Main {
     }
 
     private static void testDatabaseEdgeCreation() {
-        List<PDFText> pages = (List<PDFText>) saver.readObject(pathToSavedPages);
+        List<PDFText> pages = (List<PDFText>) saver.loadPDF();
 
         db.createEdge(pages.get(100), pages.get(200), 80.0);
     }
 
     private static void testDatabaseEdgeCreationWithLLMScore() {
-        List<PDFText> texts = (List<PDFText>) saver.readObject(pathToSavedPages);
+        List<PDFText> texts = (List<PDFText>) saver.loadPDF();
         double similarityTreshold = 70.0;
         db.connect();
 
@@ -82,11 +82,11 @@ public class Main {
             PDFText text1 = texts.get(i);
             for (int j = i+1; j < texts.size()-1; j++) {
                 PDFText text2 = texts.get(j);
-                double score = (Double) SimilarityClient.getSimilarityResponse(text1.getText(), text2.getText());
+                double score = (Double) AISimilarityClient.getSimilarityResponse(text1.getText(), text2.getText());
                 int tries = 0;
                 while (score == -1 && tries < 3) {
                     try {
-                        score = (Double) SimilarityClient.getSimilarityResponse(text1.getText(), text2.getText());
+                        score = (Double) AISimilarityClient.getSimilarityResponse(text1.getText(), text2.getText());
                         tries++;
                     } catch (Exception e) {
                         System.out.println("Connection refused (probably). Retrying in 3 seconds");
@@ -105,25 +105,25 @@ public class Main {
     }
 
     private static void testDatabaseFullGraphCreation() {
-        List<PDFText> pages = (List<PDFText>) saver.readObject(pathToSavedPages);
+        List<PDFText> pages = (List<PDFText>) saver.loadPDF();
 
-        db.createAllEdges(pages, new SimilarityCalculator(), 80);
+        db.createAllEdges(pages, new AISimilarityCalculator(), 80);
     }
 
     private static void testSaverSaveOperation() {
 
-        DataSaver saver = new DataSaver();
-        PDFReader reader = new PDFReader();
+        JDataSaver saver = new JDataSaver();
+        PDFBoxReader reader = new PDFBoxReader();
         List<PDFText> pages = new ArrayList<>();
-        pages = reader.readPages(pathToPDF);
+        pages = reader.read();
 
-        saver.saveObject(pages);
+        saver.savePDF(pages);
 
         // System.out.println(saver.readObject(Paths.get("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/src/main/java/com/graphbook/files/serialized/object_5/saved_object.txt")));
     }
 
     private static void testSaverReadOperation() {
-        System.out.println(saver.readObject(pathToSavedPages));
+        System.out.println(saver.loadPDF());
     }
 
     private static void testServerRequests() {
@@ -136,7 +136,7 @@ public class Main {
             The immediate ancestors of bees were stinging wasps in the family Crabronidae, which were predators of other insects. The switch from insect prey to pollen may have resulted from the consumption of prey insects which were flower visitors and were partially covered with pollen when they were fed to the wasp larvae. This same evolutionary scenario may have occurred within the vespoid wasps, where the pollen wasps evolved from predatory ancestors.
                 """;
 
-        System.out.println(SimilarityClient.getSimilarityResponse(resp1, resp2));
+        System.out.println(AISimilarityClient.getSimilarityResponse(resp1, resp2));
     }
 
     private static double testScoreExtraction() {
@@ -162,7 +162,7 @@ public class Main {
             Both texts discuss the evolutionary history and life cycle of butterflies, with some slight differences in details such as the timing of their origin (Paleocene vs Late Cretaceous) and specific fossil examples. However, they are largely consistent in content, indicating a high similarity score.
                 """;
 
-        double score = SimilarityClient.extractScore(resp3);
+        double score = AISimilarityClient.extractScore(resp3);
         System.out.println(score);
         return score;
     }

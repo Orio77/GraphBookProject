@@ -11,12 +11,16 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
+import java.util.List;
 
-public class DataSaver {
+import com.graphbook.elements.PDFText;
+import com.graphbook.util.interfaces.IDataSaver;
+
+public class JDataSaver implements IDataSaver {
     
-    public boolean saveObject(Object o) {
+    public boolean savePDF(Object o) { // TODO add a UI Interaction with question to save PDF, if yes, Suggest the changing the name of the pdf for easier retrieval when working with database
         long startTime = System.nanoTime();
-        Path curPath = Paths.get("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/src/main/java/com/graphbook/files/serialized/object");
+        Path curPath = CONSTANTS.SAVED_OBJECTS_PATH;
         Path dirName = createDir(curPath);
         boolean res = writeObject(o, dirName);
         if (!res) {
@@ -90,7 +94,7 @@ public class DataSaver {
         }
     }
 
-    public Object readObject(Path path) {
+    public Object readSavedPDF(Path path) {
         try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(path))) {
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
@@ -99,8 +103,8 @@ public class DataSaver {
         }
     }
 
-    public void deleteAll(String pathAsString) {
-        Path dirPath = Paths.get(pathAsString);
+    public boolean deleteAllSavedPDFs() {
+        Path dirPath = CONSTANTS.SAVED_OBJECTS_PATH;
     
         try {
             Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {
@@ -120,6 +124,21 @@ public class DataSaver {
             });
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
+    } 
+
+    @Override
+    public List<PDFText> loadPDF() {
+        // TODO
+        return null;
     }
+
+    // TODO Improve Saver
+
+    // choose the directory to store pdfs ready to use
+
+    // create folders with name of pdfs, store the pdf inside *check if the file is already saved - delete yes/no
+
 }

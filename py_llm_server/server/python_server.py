@@ -43,41 +43,41 @@ def calculate_similarity():
     return jsonify(response)
 
 # Transparent and Debug Version
-# @app.route('/similarity', methods =['POST'])
-# def calculate_similarity():
-#     print("calculate similarity called")
-#     try:
-#         print("Trying to parse JSON data")
-#         print("Raw data: ", request.data)  # Print raw data
-#         data = request.json
-#         print("JSON data parsed successfully")
+@app.route('/debug_similarity', methods =['POST'])
+def _debug_calculate_similarity():
+    print("_debug_calculate_similarity called")
+    try:
+        print("Trying to parse JSON data")
+        print("Raw data: ", request.data)  # Print raw data
+        data = request.json
+        print("JSON data parsed successfully")
 
-#         print("Logging received data")
-#         logReceivedData(data=request.data, headers=request.headers, received_json=json.dumps(request.json))
-#         print("Received data logged successfully")
+        print("Logging received data")
+        logReceivedData(data=request.data, headers=request.headers, received_json=json.dumps(request.json))
+        print("Received data logged successfully")
 
-#         print("Trying to extract text1 and text2 from data")
-#         text1 = data['text1']
-#         text2 = data['text2']
-#         print("Extracted text1 and text2 successfully")
-#     except KeyError as e:
-#         print("Caught KeyError")
-#         logErrorCause(exception=e)
-#         return jsonify({"error": f"Missing key: {e}"}), 400
-#     except Exception as e:
-#         print("caught an exception")
-#         print("Exception traceback: " + traceback.format_exc())
-#         return jsonify({"error": "An error occured while processing the request"}), 400
+        print("Trying to extract text1 and text2 from data")
+        text1 = data['text1']
+        text2 = data['text2']
+        print("Extracted text1 and text2 successfully")
+    except KeyError as e:
+        print("Caught KeyError")
+        logErrorCause(exception=e)
+        return jsonify({"error": f"Missing key: {e}"}), 400
+    except Exception as e:
+        print("caught an exception")
+        print("Exception traceback: " + traceback.format_exc())
+        return jsonify({"error": "An error occured while processing the request"}), 400
 
-#     print("Creating handler and calculating similarity score")
-#     handler = HF_LLMHandler(Phi())
-#     score = handler.get_Similarity_Score(text1, text2)
-#     print("Calculated similarity score successfully")
+    print("Creating handler and calculating similarity score")
+    handler = HF_LLMHandler(Phi())
+    score = handler.get_Similarity_Score(text1, text2)
+    print("Calculated similarity score successfully")
 
-#     response = {'similarity': score}
-#     print("Sent JSON: " + json.dumps(response))  # Print sent JSON
+    response = {'similarity': score}
+    print("Sent JSON: " + json.dumps(response))  # Print sent JSON
 
-#     return jsonify(response)
+    return jsonify(response)
 
 def logErrorCause(exception):
     with open(getPreciseLogPath(), 'a') as f:

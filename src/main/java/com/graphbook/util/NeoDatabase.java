@@ -11,6 +11,7 @@ import org.neo4j.driver.exceptions.Neo4jException;
 
 import com.graphbook.elements.PDFText;
 import com.graphbook.util.interfaces.IDatabase;
+import com.graphbook.util.interfaces.ISimilarityCalculator;
 
 public class NeoDatabase implements IDatabase {
     private Driver driver = null;
@@ -69,7 +70,7 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
-    public void createAllEdges(List<PDFText> texts, SimilarityCalculator calculator, double similarityTreshold) {
+    public void createAllEdges(List<PDFText> texts, ISimilarityCalculator calculator, double similarityTreshold) {
         connect();
 
         for (int i = 0; i < texts.size(); i++) {

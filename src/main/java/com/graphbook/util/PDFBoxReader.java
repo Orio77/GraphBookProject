@@ -7,6 +7,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -14,10 +17,9 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import com.graphbook.elements.PDFText;
 import com.graphbook.util.interfaces.IPdfReader;
 
-public class PDFReader implements IPdfReader{
+public class PDFBoxReader implements IPdfReader{
 
-    @Override
-    public PDFText read(URI absolutePath) {
+    public PDFText readAsString(URI absolutePath) {
         try {
             PDDocument doc = PDDocument.load(new File(absolutePath));
             PDFTextStripper stripper = new PDFTextStripper();
@@ -31,7 +33,7 @@ public class PDFReader implements IPdfReader{
 
     // method that takes a path as an argument and returns a List of pages in a String form
     // Exceptions are to be handled better
-    public List<PDFText> readPages(String path) {
+    public List<PDFText> readWithPath(String path) {
         URI uriPath = null;
         String beginning = "file:///";
         String completePath = beginning.concat(path);
@@ -68,6 +70,7 @@ public class PDFReader implements IPdfReader{
             for (PDDocument page : pages) {
                 try {
                     String textOfPage = stripper.getText(page);
+                    if (textOfPage.length() < 300) continue; // ommitt the little text pages
                     stringPages.add(new PDFText(textOfPage));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -79,5 +82,61 @@ public class PDFReader implements IPdfReader{
             return null;
         }
         return stringPages;
+    }
+
+    @Override
+    public List<PDFText> read() {
+        File chosenFile = choosePDF();
+
+        // read the doc
+        PDDocument pdf = null;
+        try {
+            pdf = PDDocument.load(chosenFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // split the pages
+        Splitter splitter = new Splitter();
+        List<PDDocument> pages = null;
+        try {
+            pages = splitter.split(pdf);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // get the text out of pages
+        List<PDFText> stringPages = new ArrayList<>();
+        try {
+            PDFTextStripper stripper = new PDFTextStripper();
+            for (PDDocument page : pages) {
+                try {
+                    String textOfPage = stripper.getText(page);
+                    if (textOfPage.length() < 300) continue; // ommitt the little text pages
+                    stringPages.add(new PDFText(textOfPage));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return stringPages;
+    }
+
+    private File choosePDF() {
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("PDF Files", "pdf");
+        fileChooser.setFileFilter(filter);
+
+        int returnValue = fileChooser.showOpenDialog(null);
+        while (returnValue != JFileChooser.APPROVE_OPTION && returnValue != JFileChooser.CANCEL_OPTION) {
+            returnValue = fileChooser.showOpenDialog(null);
+        }
+        return returnValue == JFileChooser.CANCEL_OPTION ? null : fileChooser.getSelectedFile();
     }
 }

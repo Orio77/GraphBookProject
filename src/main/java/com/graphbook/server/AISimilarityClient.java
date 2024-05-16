@@ -19,9 +19,9 @@ import org.apache.http.util.EntityUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphbook.util.CONSTANTS;
-import com.graphbook.util.DataSaver;
+import com.graphbook.util.JDataSaver;
 
-public class SimilarityClient {
+public class AISimilarityClient {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     
 
@@ -89,7 +89,7 @@ public class SimilarityClient {
     }
 
     private static void logError(int errorCode, String sentJson, String text1, String text2) { 
-        DataSaver saver = new DataSaver();
+        JDataSaver saver = new JDataSaver();
 
         // create file for error log
         Path dirPath = saver.createDir(CONSTANTS.ERROR_LOG_PATH);

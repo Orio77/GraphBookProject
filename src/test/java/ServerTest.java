@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Test;
 
-import com.graphbook.server.SimilarityClient;
+import com.graphbook.server.AISimilarityClient;
 
 public class ServerTest {
     
@@ -22,8 +22,8 @@ public class ServerTest {
                     """;
             
             System.out.println("Before calling getSimilarityResponse");
-            Object responsePrim = SimilarityClient.getSimilarityResponse(text1, text2);
-            String response = SimilarityClient.getSimilarityResponse(text1, text2).toString();
+            Object responsePrim = AISimilarityClient.getSimilarityResponse(text1, text2);
+            String response = AISimilarityClient.getSimilarityResponse(text1, text2).toString();
             System.out.println("After calling getSimilarityResponse");
             System.out.println("Response: " + response);  
             System.out.println("Response Prim: " + responsePrim);    
