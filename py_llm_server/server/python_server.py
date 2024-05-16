@@ -1,7 +1,9 @@
 import os
 import sys
-import dotenv
-dotenv.load_dotenv()
+import re
+import traceback
+from dotenv import load_dotenv
+load_dotenv("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/py_llm_server/environment/.env")
 
 LOG_DIR = os.getenv('ERROR_LOG_DIR')
 
@@ -14,6 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from hf_llm_Handler import HF_LLMHandler
 from llms.bert import BERT
 from llms.phi import Phi
+from llms.mistral import Mistral
 
 
 
@@ -21,18 +24,17 @@ app = Flask(__name__)
 
 @app.route('/similarity', methods =['POST'])
 def calculate_similarity():
-    logReceivedData(data=request.data, headers=request.headers, received_json=json.dumps(request.json))
-
     data = request.json
 
     try:
         text1 = data['text1']
         text2 = data['text2']
-    except KeyError as e:
+    except Exception as e:
+        logReceivedData
         logErrorCause(exception=e)
         return jsonify({"error": f"Missing key: {e}"}), 400
 
-    handler = HF_LLMHandler(Phi())
+    handler = HF_LLMHandler(Mistral())
     score = handler.get_Similarity_Score(text1, text2)
 
     response = {'similarity': score}
@@ -40,6 +42,72 @@ def calculate_similarity():
 
     return jsonify(response)
 
+# Transparent and Debug Version
+# @app.route('/similarity', methods =['POST'])
+# def calculate_similarity():
+#     print("calculate similarity called")
+#     try:
+#         print("Trying to parse JSON data")
+#         print("Raw data: ", request.data)  # Print raw data
+#         data = request.json
+#         print("JSON data parsed successfully")
+
+#         print("Logging received data")
+#         logReceivedData(data=request.data, headers=request.headers, received_json=json.dumps(request.json))
+#         print("Received data logged successfully")
+
+#         print("Trying to extract text1 and text2 from data")
+#         text1 = data['text1']
+#         text2 = data['text2']
+#         print("Extracted text1 and text2 successfully")
+#     except KeyError as e:
+#         print("Caught KeyError")
+#         logErrorCause(exception=e)
+#         return jsonify({"error": f"Missing key: {e}"}), 400
+#     except Exception as e:
+#         print("caught an exception")
+#         print("Exception traceback: " + traceback.format_exc())
+#         return jsonify({"error": "An error occured while processing the request"}), 400
+
+#     print("Creating handler and calculating similarity score")
+#     handler = HF_LLMHandler(Phi())
+#     score = handler.get_Similarity_Score(text1, text2)
+#     print("Calculated similarity score successfully")
+
+#     response = {'similarity': score}
+#     print("Sent JSON: " + json.dumps(response))  # Print sent JSON
+
+#     return jsonify(response)
+
+def logErrorCause(exception):
+    with open(getPreciseLogPath(), 'a') as f:
+        f.write(f"Missing key in received JSON: {exception}\n")
+
+def logReceivedData(data, headers, received_json):
+    with open(getPreciseLogPath(), 'a') as f:
+        f.write("PYTHON:\n" +
+                "Received data: " + str(data) + "\n" +
+                "Received headers: " + str(headers) + "\n" +
+                "Received json: " + str(received_json) + "\n")
+
+def getPreciseLogPath():
+    folders = os.listdir(LOG_DIR)
+
+    def get_number(folder_name):
+        match = re.search(r'\d+$', folder_name)
+        return int(match.group()) if match else 0
+    
+    folders.sort(key=get_number)
+
+    LOG_PATH = os.path.join(LOG_DIR, folders[-1])
+    print(folders[-1])
+    return LOG_PATH
+
+def getPath():
+    print("Current directory:", os.getcwd)
+    print("\nPython path:")
+    for path in sys.path:
+        print(path)
 
 
 def test_handler():
@@ -56,28 +124,6 @@ def test_handler():
 
     print(score)
 
-def getPath():
-    print("Current directory:", os.getcwd)
-    print("\nPython path:")
-    for path in sys.path:
-        print(path)
-
-def logErrorCause(exception):
-    with open(getPreciseLogPath, 'a') as f:
-        f.write(f"Missing key in received JSON: {exception}\n")
-
-def logReceivedData(data, headers, received_json):
-    with open(getPreciseLogPath(), 'a') as f:
-        f.write("Received data: " + str(data) + "\n")
-        f.write("Received headers: " + str(headers) + "\n")
-        f.write("Received json: " + str(received_json) + "\n")
-
-def getPreciseLogPath():
-    folders = os.listdir(LOG_DIR)
-    LOG_PATH = os.path.join(LOG_DIR, folders[-1], 'log.txt')
-    return LOG_PATH
-
 
 if __name__ == "__main__":
-    # test_handler()
     app.run(debug=True, host='0.0.0.0', port=5000)

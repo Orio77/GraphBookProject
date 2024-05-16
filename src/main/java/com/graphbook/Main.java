@@ -21,8 +21,9 @@ public class Main {
 
 
     public static void main(String[] args) {
-        // testDatabaseEdgeCreationWithLLMScore();
-        new DataSaver().deleteAll(CONSTANTS.ERROR_LOG_PATH.toString());
+        // db.clearAllEdges();
+        testDatabaseEdgeCreationWithLLMScore();
+        // new DataSaver().deleteAll(CONSTANTS.ERROR_LOG_PATH.toString());
     }
 
 
@@ -74,28 +75,28 @@ public class Main {
 
     private static void testDatabaseEdgeCreationWithLLMScore() {
         List<PDFText> texts = (List<PDFText>) saver.readObject(pathToSavedPages);
-        double similarityTreshold = 60.0;
+        double similarityTreshold = 70.0;
         db.connect();
 
-        for (int i = 10; i < texts.size(); i++) {
+        for (int i = 0; i < texts.size(); i++) {
             PDFText text1 = texts.get(i);
             for (int j = i+1; j < texts.size()-1; j++) {
                 PDFText text2 = texts.get(j);
                 double score = (Double) SimilarityClient.getSimilarityResponse(text1.getText(), text2.getText());
-                // int tries = 0;
-                // while (score == -1 && tries < 3) {
-                //     try {
-                //         score = (Double) SimilarityClient.getSimilarityResponse(text1.getText(), text2.getText());
-                //         tries++;
-                //     } catch (Exception e) {
-                //         System.out.println("Connection refused (probably). Retrying in 3 seconds");
-                //         try {
-                //             Thread.sleep(3000);
-                //         } catch (InterruptedException ie) {
-                //             Thread.currentThread().interrupt();
-                //         }
-                //     }
-                // }
+                int tries = 0;
+                while (score == -1 && tries < 3) {
+                    try {
+                        score = (Double) SimilarityClient.getSimilarityResponse(text1.getText(), text2.getText());
+                        tries++;
+                    } catch (Exception e) {
+                        System.out.println("Connection refused (probably). Retrying in 3 seconds");
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                }
                 if (score < similarityTreshold) continue;
                 db.createEdge(text1, text2, score);
             }

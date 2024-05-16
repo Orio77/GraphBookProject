@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -30,7 +31,7 @@ public class SimilarityClient {
 
             String json = MAPPER.writeValueAsString(Map.of("text1", text1, "text2", text2));
 
-            StringEntity entity = new StringEntity(json);
+            StringEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
             post.setEntity(entity);
             post.setHeader("Accept", "application/json");
             post.setHeader("Content-type", "application/json");
@@ -48,7 +49,7 @@ public class SimilarityClient {
             Map<?, ?> responseMap = MAPPER.readValue(jsonResponse, Map.class);
             System.out.println("Parsed response: " + responseMap);  // Print the parsed map
             String responseString = (String) responseMap.get("similarity");
-            return extractScore(responseString);
+            return extractScoreAdjusted(responseString);
         }
         catch (SocketException e) {
             System.out.println("Caught a SocketException. Message: " + e.getMessage());
@@ -61,6 +62,18 @@ public class SimilarityClient {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static double extractScoreAdjusted(String response) {
+        char[] digits = new char[5];
+        int i = 0;
+
+        while (i < 5 && (response.charAt(i) == '.' || Character.isDigit(response.charAt(i)))) {
+            digits[i] = response.charAt(i);
+            i++;
+        }
+
+        return Double.parseDouble(new String(digits));
     }
 
     public static double extractScore(String response) {
