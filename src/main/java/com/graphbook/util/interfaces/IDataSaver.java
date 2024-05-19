@@ -1,13 +1,16 @@
 package com.graphbook.util.interfaces;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import com.graphbook.elements.PDFText;
 
 public interface IDataSaver {
     
-    public boolean savePDF(Object o);
-    public boolean deleteAllSavedPDFs();
-    public List<PDFText> loadPDF();
+    boolean savePDF(Object o, String name);
+    boolean deleteAllSavedPDFs();
+    List<PDFText> loadPDF();
+    Path createDir(Path path);
+    Path createFile(String pathAsString, String fileName);
 
 }

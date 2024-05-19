@@ -1,0 +1,9 @@
+2024-05-18 21:34:56 ERROR GraphBook:76 - IOException occured while writing file into the properties file
+java.io.FileNotFoundException: config\paths.properties (The system cannot find the path specified)
+	at java.base/java.io.FileOutputStream.open0(Native Method) ~[?:?]
+	at java.base/java.io.FileOutputStream.open(FileOutputStream.java:293) ~[?:?]
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:235) ~[?:?]
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:123) ~[?:?]
+	at com.graphbook.GraphBook.setProjectPath(GraphBook.java:73) [classes/:?]
+	at com.graphbook.GraphBook.<init>(GraphBook.java:39) [classes/:?]
+	at com.graphbook.GraphBook.main(GraphBook.java:81) [classes/:?]

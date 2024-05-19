@@ -3,6 +3,7 @@ target/
 .vscode/
 effective-pom.xml
 pom.xml
+log4j2.xml
 py_llm_server/__pycache__
 py_llm_server/interfaces/__pycache__
 py_llm_server/llms/__pycache__

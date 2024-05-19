@@ -7,14 +7,12 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 import com.graphbook.elements.PDFText;
+import com.graphbook.frontend.InteractivePathChooser;
 import com.graphbook.util.interfaces.IPdfReader;
 
 public class PDFBoxReader implements IPdfReader{
@@ -86,12 +84,12 @@ public class PDFBoxReader implements IPdfReader{
 
     @Override
     public List<PDFText> read() {
-        File chosenFile = choosePDF();
+        File chosenPDF = new InteractivePathChooser().choosePDF();
 
         // read the doc
         PDDocument pdf = null;
         try {
-            pdf = PDDocument.load(chosenFile);
+            pdf = PDDocument.load(chosenPDF);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -126,17 +124,5 @@ public class PDFBoxReader implements IPdfReader{
             return null;
         }
         return stringPages;
-    }
-
-    private File choosePDF() {
-        JFileChooser fileChooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("PDF Files", "pdf");
-        fileChooser.setFileFilter(filter);
-
-        int returnValue = fileChooser.showOpenDialog(null);
-        while (returnValue != JFileChooser.APPROVE_OPTION && returnValue != JFileChooser.CANCEL_OPTION) {
-            returnValue = fileChooser.showOpenDialog(null);
-        }
-        return returnValue == JFileChooser.CANCEL_OPTION ? null : fileChooser.getSelectedFile();
     }
 }
