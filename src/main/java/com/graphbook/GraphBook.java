@@ -13,11 +13,15 @@ import org.apache.logging.log4j.LogManager;
 
 import com.graphbook.elements.PDFText;
 import com.graphbook.frontend.InteractivePathChooser;
+import com.graphbook.server.ApacheHTTP_SimilarityClient;
 import com.graphbook.util.AISimilarityCalculator;
 import com.graphbook.util.CONSTANTS;
 import com.graphbook.util.JDataSaver;
 import com.graphbook.util.NeoDatabase;
 import com.graphbook.util.PDFBoxReader;
+import com.graphbook.util.SimpleScoreExtractor;
+import com.graphbook.util.interfaces.IAIResponseSimilarityScoreExtractor;
+import com.graphbook.util.interfaces.IAISimilarityClient;
 import com.graphbook.util.interfaces.IDataSaver;
 import com.graphbook.util.interfaces.IDatabase;
 import com.graphbook.util.interfaces.IPdfReader;
@@ -28,6 +32,8 @@ public class GraphBook {
     private final IPdfReader reader;
     private final IDatabase db;
     private final IDataSaver saver;
+    private final IAIResponseSimilarityScoreExtractor extractor;
+    private final IAISimilarityClient client;
     private final ISimilarityCalculator calculator;
 
     // default
@@ -35,17 +41,22 @@ public class GraphBook {
         reader = new PDFBoxReader();
         db = new NeoDatabase();
         saver = new JDataSaver();
-        calculator = new AISimilarityCalculator();
-        setProjectPath();
-        createNecessaryDirectories();
+        extractor = new SimpleScoreExtractor();
+        client = new ApacheHTTP_SimilarityClient(extractor);
+        calculator = new AISimilarityCalculator(client);
+        // setProjectPath();
+        // createNecessaryDirectories();
     }
 
-    public GraphBook(IPdfReader reader, IDatabase db, IDataSaver saver, ISimilarityCalculator calculator) {
+    public GraphBook(IPdfReader reader, IDatabase db, IDataSaver saver, ISimilarityCalculator calculator, IAIResponseSimilarityScoreExtractor extractor, IAISimilarityClient client) {
         this.reader = reader;
         this.db = db;
         this.saver = saver;
         this.calculator = calculator;
-        setProjectPath();
+        this.extractor = extractor;
+        this.client = client;
+        // setProjectPath();
+        // createNecessaryDirectories();
     }
 
 
@@ -88,14 +99,33 @@ public class GraphBook {
         }
     }
 
-    public void createNecessaryDirectories() {
+    private void createNecessaryDirectories() {
         File savedPdfsDirectory = new File(CONSTANTS.SAVED_PDFS_PATH.toString());
         if (!savedPdfsDirectory.exists()) {
             savedPdfsDirectory.mkdir();
         }
     }
 
-    public static void main(String[] args) {
-        new GraphBook();
+    public void runPythonServer() {
+        ProcessBuilder processBuilder = new ProcessBuilder("C:/Users/macie/anaconda3/envs/GraphBookProjectPyEnv/python.exe", "python_server.py");
+        processBuilder.directory(CONSTANTS.PYTHON_SERVER_PATH.toFile());
+    
+        // Redirect the process's output to the Java program's output
+        processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
+    
+        try {
+            // Start the process and keep it running
+            Process process = processBuilder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+    public static void main(String[] args) {
+        GraphBook gb = new GraphBook();
+        gb.runPythonServer();
+        gb.db.createAllEdges(gb.saver.loadPDF(), gb.calculator, 80.0);
+    }
+    // C:\Users\macie\GraphBookTestDir
 }

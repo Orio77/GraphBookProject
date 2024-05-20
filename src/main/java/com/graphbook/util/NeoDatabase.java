@@ -10,8 +10,10 @@ import org.neo4j.driver.Values;
 import org.neo4j.driver.exceptions.Neo4jException;
 
 import com.graphbook.elements.PDFText;
+import com.graphbook.server.ApacheHTTP_SimilarityClient;
 import com.graphbook.util.interfaces.IDatabase;
 import com.graphbook.util.interfaces.ISimilarityCalculator;
+import com.graphbook.util.interfaces.ISimilarityClient;
 
 public class NeoDatabase implements IDatabase {
     private Driver driver = null;
@@ -70,14 +72,18 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    private final ISimilarityClient client = new ApacheHTTP_SimilarityClient(new SimpleScoreExtractor());
     public void createAllEdges(List<PDFText> texts, ISimilarityCalculator calculator, double similarityTreshold) {
         connect();
-
-        for (int i = 0; i < texts.size(); i++) {
+        System.out.println("Connected successfully");
+        for (int i = 121; i < 170; i++) { // TODO Adjust the loop parameters // i < texts.size()  and j < texts.size()-1
+            System.out.println(i + "th iteration");
             PDFText text1 = texts.get(i);
-            for (int j = i+1; j < texts.size()-1; j++) {
+            for (int j = i+1; j < 169; j++) {
+                System.out.println(j);
                 PDFText text2 = texts.get(j);
-                double score = calculator.calculate(text1, text2);
+                // double score = calculator.calculate(text1, text2);
+                double score = (Double) client.getSimilarityResponse(text1.getText(), text2.getText());
                 if (score < similarityTreshold) continue;
                 createEdge(text1, text2, score);
             }

@@ -1,0 +1,3 @@
+2024-05-19 14:56:27 INFO  ApacheHTTP_SimilarityClient:162 - Executing POST request to http://localhost:5000/debug_similarity
+2024-05-19 14:56:27 INFO  ApacheHTTP_SimilarityClient:164 - POST request executed successfully, received response
+2024-05-19 14:56:27 ERROR ApacheHTTP_SimilarityClient:78 - Error Status Code received. Status Code: 400

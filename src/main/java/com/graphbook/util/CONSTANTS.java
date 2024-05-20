@@ -15,6 +15,7 @@ public class CONSTANTS {
     public static final URI MY_URI = URI.create("http://localhost:5000/similarity");
     public static final Path SAVED_OBJECTS_PATH = Paths.get("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/src/main/java/com/graphbook/files/serialized/object");
     public static final Path CONFIG_PATH = Paths.get("src/main/java/com/graphbook/config/paths.properties");
+    public static final Path PYTHON_SERVER_PATH = Paths.get("py_llm_server/server/");
     public static Path STORED_PDFS_PATH = null; // TODO Set this var with Improved Saver
     public static final Path PROJECT_PATH = loadProjectPath();
     public static final Path SAVED_PDFS_PATH = PROJECT_PATH.resolve("saved");

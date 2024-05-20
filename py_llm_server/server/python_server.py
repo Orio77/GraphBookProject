@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import traceback
+import atexit
 from dotenv import load_dotenv
 load_dotenv("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/py_llm_server/environment/.env")
 
@@ -53,7 +54,7 @@ def _debug_calculate_similarity():
         print("JSON data parsed successfully")
 
         print("Logging received data")
-        logReceivedData(data=request.data, headers=request.headers, received_json=json.dumps(request.json))
+        # logReceivedData(data=request.data, headers=request.headers, received_json=json.dumps(request.json))
         print("Received data logged successfully")
 
         print("Trying to extract text1 and text2 from data")
@@ -123,6 +124,11 @@ def test_handler():
     score = handler.get_Similarity_Score(text3, text4)
 
     print(score)
+
+def closing_Message():
+    print("Server is shutting down...")
+
+atexit.register(closing_Message)
 
 
 if __name__ == "__main__":

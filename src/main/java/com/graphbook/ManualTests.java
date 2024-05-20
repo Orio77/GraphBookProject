@@ -107,7 +107,7 @@ public class ManualTests {
     private static void testDatabaseFullGraphCreation() {
         List<PDFText> pages = (List<PDFText>) saver.loadPDF();
 
-        db.createAllEdges(pages, new AISimilarityCalculator(), 80);
+        // db.createAllEdges(pages, new AISimilarityCalculator(), 80);
     }
 
     private static void testSaverSaveOperation() {

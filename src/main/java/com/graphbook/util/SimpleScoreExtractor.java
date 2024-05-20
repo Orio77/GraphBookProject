@@ -14,6 +14,10 @@ public class SimpleScoreExtractor implements IAIResponseSimilarityScoreExtractor
             i++;
         }
 
-        return Double.parseDouble(new String(digits));
+        if (i == 0) {
+            return -1;
+        }
+        else
+            return Double.parseDouble(new String(digits, 0, i));
     }    
 }

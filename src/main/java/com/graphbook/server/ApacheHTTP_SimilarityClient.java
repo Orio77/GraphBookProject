@@ -1,16 +1,21 @@
 package com.graphbook.server;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Map;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphbook.util.CONSTANTS;
 import com.graphbook.util.interfaces.IAIResponseSimilarityScoreExtractor;
 import com.graphbook.util.interfaces.IAISimilarityClient;
-import com.graphbook.util.interfaces.IDataSaver;
 
 /**
  * ApacheHTTP_SimilarityClient is a class that communicates with a local AI service via HTTP requests.
@@ -40,9 +44,8 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
      * Constructor for the ApacheHTTP_SimilarityClient class.
      * 
      * @param extractor An instance of IAIResponseSimilarityScoreExtractor to extract the similarity score from the AI service's response.
-     * @param errorDataSaver An instance of IDataSaver to save error data if any error occurs during the process.
      */
-    public ApacheHTTP_SimilarityClient(IAIResponseSimilarityScoreExtractor extractor, IDataSaver errorDataSavaer) {
+    public ApacheHTTP_SimilarityClient(IAIResponseSimilarityScoreExtractor extractor) {
         this.extractor = extractor;
         this.MAPPER = new ObjectMapper();
     }
@@ -54,38 +57,18 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
      * @param text1 The first text to compare. It should not be null or empty.
      * @param text2 The second text to compare. It should not be null or empty.
      * @return The similarity score as a Double. If an error occurs, it returns -1.
-     * @throws RuntimeException if the response from the server is null, if the status code of the response is not 200,
+     * @throws RuntimeException if the response from the server is null,
      *                          if there's a problem parsing the JSON response or if there's a problem mapping the JSON response to a Map.
      */
     @Override
     public Object getSimilarityResponse(String text1, String text2) {
-        // Get the response
-        HttpResponse response = sendTexts(text1, text2);
-
-        if (response == null) {
-            throw new RuntimeException("Response is null. Look for logged error for the cause");
-        }
-
-        // Check if the response' status code is OK
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode != 200) {
-            // If the status code is not 200, log the error and throw a runtime exception
-            logger.error("Error Status Code received. Status Code: {}", statusCode);
-            throw new RuntimeException("Error Status Code recived. Status Code: " + statusCode);
-        }
-
         // Parse the response
-        String jsonResponse = null;
-        try {
-            jsonResponse = EntityUtils.toString(response.getEntity());
-        } catch (ParseException e) {
-            logger.error("ParseException occured. Response was: {}", response, e.getMessage(), e);
-            throw new RuntimeException("Parsing Json Failed");
-        } catch (IOException e) {
-            logger.error("IOException occured.", e.getMessage(), e);
-            throw new RuntimeException("IOException occured during parsing Json response");
+        String response = sendTexts(text1, text2);
+        if (response == null) {
+            throw new RuntimeException("Received response from the Python Server was null. Check error log for details");
         }
-
+        String jsonResponse = response;
+        
         Map<?, ?> responseMap = null;
         try {
             responseMap = MAPPER.readValue(jsonResponse, Map.class);
@@ -116,10 +99,13 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
  * @throws JsonProcessingException If there is an error formatting the texts as JSON.
  * @throws ClientProtocolException If there is an HTTP protocol error.
  * @throws IOException If there is an error executing the HTTP request.
- */
-    private HttpResponse sendTexts(String text1, String text2) {
-        HttpResponse response = null;
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
+ */ // TODO Update Documentation
+    private String sendTexts(String text1, String text2) {
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setSocketTimeout(30000)  // socket timeout
+            .setConnectTimeout(30000)  // connection timeout
+            .build();
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             // Create a new HttpPost with the AI service URI
             HttpPost post = new HttpPost(CONSTANTS.MY_URI);
 
@@ -132,9 +118,37 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             post.setHeader("Accept", "application/json");
             post.setHeader("Content-type", "application/json");
 
-            // Execute the response
-            response = client.execute(post);
-            return response;
+            logger.info("Executing POST request to {}", CONSTANTS.MY_URI);  // Added logging
+            HttpResponse response = client.execute(post);
+            logger.info("POST request executed successfully, received response");  // Added logging
+
+            if (response == null) {
+                throw new RuntimeException("Response is null. Look for logged error for the cause");
+            }
+
+            // Check if the response' status code is OK
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                // If the status code is not 200, log the error and throw a runtime exception
+                logger.error("Error Status Code received. Status Code: {}", statusCode);
+                throw new RuntimeException("Error Status Code recived. Status Code: " + statusCode);
+            }
+
+            HttpEntity receivedEntity = response.getEntity();
+            logger.info("Entity content: {}", receivedEntity);  // Added logging
+            try {
+                String jsonResponse = EntityUtils.toString(receivedEntity);
+                return jsonResponse;
+            } catch (IOException e) {
+                logger.error("IOException occurred while reading the response entity. Entity content: {}", receivedEntity, e);
+                throw new RuntimeException("IOException occurred during parsing JSON response", e);
+            } finally {
+                try {
+                    EntityUtils.consume(receivedEntity);
+                } catch (IOException e) {
+                    logger.warn("IOException occurred while consuming the response entity. This might indicate a resource leak.", e);
+                }
+            }
         }
         // Catch the errors and log the exceptions
         catch (JsonProcessingException e) {
@@ -142,7 +156,7 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             return null;
         }
         catch (ClientProtocolException e) {
-            logger.error("CLient Protocol Exception occured. Exception: {}", e.getMessage(), e);
+            logger.error("Client Protocol Exception occured. Exception: {}", e.getMessage(), e);
             return null;
         }
         catch (IOException e) {

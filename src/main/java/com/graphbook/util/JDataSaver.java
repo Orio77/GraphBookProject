@@ -136,8 +136,10 @@ public class JDataSaver implements IDataSaver {
     @SuppressWarnings("unchecked")
     @Override
     public List<PDFText> loadPDF() {
-        File savedPDF = new InteractivePathChooser().chooseSavedPDF();
-        return (List<PDFText>) readSavedPDF(savedPDF); // TODO Check if the pdf is read correctly
+        File savedPDF = new InteractivePathChooser().chooseSavedPDF(); // TODO adjust the save folders 
+        // TODO add a window informing the user what he is tasked with
+        // TODO add (in frontend) a feature to rename the pdf as the user wishes, instruct him for a simple name
+        return (List<PDFText>) readSavedPDF(savedPDF); 
     }
 
     // TODO Improve Saver

@@ -1,16 +1,7 @@
-2024-05-18 21:36:04 ERROR CONSTANTS:27 - IOException occured while setting the config project path.
-java.io.FileNotFoundException: ..\config\paths.properties (The system cannot find the path specified)
-	at java.base/java.io.FileInputStream.open0(Native Method) ~[?:?]
-	at java.base/java.io.FileInputStream.open(FileInputStream.java:216) ~[?:?]
-	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:157) ~[?:?]
-	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:111) ~[?:?]
-	at com.graphbook.util.CONSTANTS.loadProjectPath(CONSTANTS.java:22) [classes/:?]
-	at com.graphbook.util.CONSTANTS.<clinit>(CONSTANTS.java:18) [classes/:?]
-2024-05-18 21:36:12 ERROR CONSTANTS:27 - IOException occured while setting the config project path.
-java.io.FileNotFoundException: ..\config\paths.properties (The system cannot find the path specified)
-	at java.base/java.io.FileInputStream.open0(Native Method) ~[?:?]
-	at java.base/java.io.FileInputStream.open(FileInputStream.java:216) ~[?:?]
-	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:157) ~[?:?]
-	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:111) ~[?:?]
-	at com.graphbook.util.CONSTANTS.loadProjectPath(CONSTANTS.java:22) [classes/:?]
-	at com.graphbook.util.CONSTANTS.main(CONSTANTS.java:33) [classes/:?]
+2024-05-20 09:13:54 INFO  ApacheHTTP_SimilarityClient:129 - Executing POST request to http://localhost:5000/similarity
+2024-05-20 09:13:55 INFO  ApacheHTTP_SimilarityClient:131 - POST request executed successfully, received response
+2024-05-20 09:13:55 INFO  ApacheHTTP_SimilarityClient:146 - Entity content: ResponseEntityProxy{[Content-Type: application/json,Content-Length: 29,Chunked: false]}
+2024-05-20 09:13:55 INFO  ApacheHTTP_SimilarityClient:129 - Executing POST request to http://localhost:5000/similarity
+2024-05-20 09:13:56 INFO  ApacheHTTP_SimilarityClient:131 - POST request executed successfully, received response
+2024-05-20 09:13:56 INFO  ApacheHTTP_SimilarityClient:146 - Entity content: ResponseEntityProxy{[Content-Type: application/json,Content-Length: 29,Chunked: false]}
+2024-05-20 09:13:56 INFO  ApacheHTTP_SimilarityClient:129 - Executing POST request to http://localhost:5000/similarity

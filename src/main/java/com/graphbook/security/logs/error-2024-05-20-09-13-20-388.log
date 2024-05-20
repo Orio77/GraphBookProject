@@ -1,0 +1,8 @@
+2024-05-20 09:13:18 INFO  ApacheHTTP_SimilarityClient:146 - Entity content: ResponseEntityProxy{[Content-Type: application/json,Content-Length: 32,Chunked: false]}
+2024-05-20 09:13:18 INFO  ApacheHTTP_SimilarityClient:129 - Executing POST request to http://localhost:5000/similarity
+2024-05-20 09:13:18 INFO  ApacheHTTP_SimilarityClient:131 - POST request executed successfully, received response
+2024-05-20 09:13:18 INFO  ApacheHTTP_SimilarityClient:146 - Entity content: ResponseEntityProxy{[Content-Type: application/json,Content-Length: 32,Chunked: false]}
+2024-05-20 09:13:18 INFO  ApacheHTTP_SimilarityClient:129 - Executing POST request to http://localhost:5000/similarity
+2024-05-20 09:13:19 INFO  ApacheHTTP_SimilarityClient:131 - POST request executed successfully, received response
+2024-05-20 09:13:19 INFO  ApacheHTTP_SimilarityClient:146 - Entity content: ResponseEntityProxy{[Content-Type: application/json,Content-Length: 30,Chunked: false]}
+2024-05-20 09:13:19 INFO  ApacheHTTP_SimilarityClient:129 - Executing POST request to http://localhost:5000/similarity

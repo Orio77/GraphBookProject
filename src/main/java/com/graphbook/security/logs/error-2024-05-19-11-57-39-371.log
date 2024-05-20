@@ -1,0 +1,88 @@
+2024-05-19 11:57:58 ERROR ApacheHTTP_SimilarityClient:83 - IOException occured.
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.ensureOpenAndConnected(NioSocketImpl.java:165) ~[?:?]
+	at java.base/sun.nio.ch.NioSocketImpl.beginRead(NioSocketImpl.java:231) ~[?:?]
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:299) ~[?:?]
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:350) ~[?:?]
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:803) ~[?:?]
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:966) ~[?:?]
+	at org.apache.http.impl.io.SessionInputBufferImpl.streamRead(SessionInputBufferImpl.java:137) ~[httpcore-4.4.16.jar:4.4.16]
+	at org.apache.http.impl.io.SessionInputBufferImpl.fillBuffer(SessionInputBufferImpl.java:153) ~[httpcore-4.4.16.jar:4.4.16]
+	at org.apache.http.impl.io.SessionInputBufferImpl.read(SessionInputBufferImpl.java:205) ~[httpcore-4.4.16.jar:4.4.16]
+	at org.apache.http.impl.io.ContentLengthInputStream.read(ContentLengthInputStream.java:176) ~[httpcore-4.4.16.jar:4.4.16]
+	at org.apache.http.conn.EofSensorInputStream.read(EofSensorInputStream.java:135) ~[httpclient-4.5.14.jar:4.5.14]
+	at java.base/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:270) ~[?:?]
+	at java.base/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:313) ~[?:?]
+	at java.base/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:188) ~[?:?]
+	at java.base/java.io.InputStreamReader.read(InputStreamReader.java:177) ~[?:?]
+	at java.base/java.io.Reader.read(Reader.java:250) ~[?:?]
+	at org.apache.http.util.EntityUtils.toString(EntityUtils.java:227) ~[httpcore-4.4.16.jar:4.4.16]
+	at org.apache.http.util.EntityUtils.toString(EntityUtils.java:308) ~[httpcore-4.4.16.jar:4.4.16]
+	at com.graphbook.server.ApacheHTTP_SimilarityClient.getSimilarityResponse(ApacheHTTP_SimilarityClient.java:78) [classes/:?]
+	at com.graphbook.util.AISimilarityCalculator.calculate(AISimilarityCalculator.java:19) [classes/:?]
+	at com.graphbook.util.NeoDatabase.createAllEdges(NeoDatabase.java:82) [classes/:?]
+	at com.graphbook.GraphBook.main(GraphBook.java:129) [classes/:?]
+
+
+"Sent JSON: {"similarity": "98.5\n"}
+127.0.0.1 - - [19/May/2024 11:57:58] "POST /similarity HTTP/1.1" 200 -
+Exception in thread "main" java.lang.RuntimeException: IOException occured during parsing Json response
+        at com.graphbook.server.ApacheHTTP_SimilarityClient.getSimilarityResponse(ApacheHTTP_SimilarityClient.java:84)
+        at com.graphbook.util.AISimilarityCalculator.calculate(AISimilarityCalculator.java:19)
+        at com.graphbook.util.NeoDatabase.createAllEdges(NeoDatabase.java:82)
+        at com.graphbook.GraphBook.main(GraphBook.java:129)
+PS C:\Users\macie\iCloudDrive\MyProjects\graph-book-core>  * Detected change in 'C:\\Users\\macie\\iCloudDrive\\MyProjects\\graph-book-core\\py_llm_server\\server\\python_server.py', reloading
+ * Detected change in 'C:\\Users\\macie\\iCloudDrive\\MyProjects\\graph-book-core\\py_llm_server\\server\\python_server.py', reloading
+ * Detected change in 'C:\\Users\\macie\\iCloudDrive\\MyProjects\\graph-book-core\\py_llm_server\\server\\python_server.py', reloading
+ * Detected change in 'C:\\Users\\macie\\iCloudDrive\\MyProjects\\graph-book-core\\py_llm_server\\server\\python_server.py', reloading
+ * Restarting with stat
+ * Restarting with stat
+ * Restarting with stat:
+
+
+```java
+@Override
+    public Object getSimilarityResponse(String text1, String text2) {
+        // Get the response
+        HttpResponse response = sendTexts(text1, text2);
+
+        if (response == null) {
+            throw new RuntimeException("Response is null. Look for logged error for the cause");
+        }
+
+        // Check if the response' status code is OK
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode != 200) {
+            // If the status code is not 200, log the error and throw a runtime exception
+            logger.error("Error Status Code received. Status Code: {}", statusCode);
+            throw new RuntimeException("Error Status Code recived. Status Code: " + statusCode);
+        }
+
+        // Parse the response
+        String jsonResponse = null;
+        try {
+            jsonResponse = EntityUtils.toString(response.getEntity());
+        } catch (ParseException e) {
+            logger.error("ParseException occured. Response was: {}", response, e.getMessage(), e);
+            throw new RuntimeException("Parsing Json Failed");
+        } catch (IOException e) {
+            logger.error("IOException occured.", e.getMessage(), e);
+            throw new RuntimeException("IOException occured during parsing Json response");
+        }
+
+        Map<?, ?> responseMap = null;
+        try {
+            responseMap = MAPPER.readValue(jsonResponse, Map.class);
+        } catch (JsonMappingException e) {
+            logger.error("JsonMappingException occured.", e.getMessage(), e);
+            throw new RuntimeException("Mapping Json Failed");
+        } catch (JsonProcessingException e) {
+            logger.error("JsonMappingException occured.", e.getMessage(), e);
+            throw new RuntimeException("JsonProcessingException occured during mapping json");
+        }
+        String responseString = (String) responseMap.get("similarity");
+
+        // Extract the similarity score and return it
+        return extractor.extract(responseString);
+    }
+```
