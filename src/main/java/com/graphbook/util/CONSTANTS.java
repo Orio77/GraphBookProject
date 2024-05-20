@@ -22,7 +22,7 @@ public class CONSTANTS {
 
     private static Path loadProjectPath() {
         Properties properties = new Properties();
-        try (FileInputStream in = new FileInputStream("src/main/java/com/graphbook/config/paths.properties")) { // TODO Adjust the path
+        try (FileInputStream in = new FileInputStream("src/main/java/com/graphbook/config/paths.properties")) {
             properties.load(in);
             return Paths.get(properties.getProperty("PROJECT_PATH"));
         } catch (IOException e) {

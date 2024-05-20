@@ -1,5 +1,7 @@
 package com.graphbook.util;
 
+import java.nio.file.Paths;
+import java.sql.Time;
 import java.util.List;
 
 import org.neo4j.driver.AuthTokens;
@@ -10,10 +12,8 @@ import org.neo4j.driver.Values;
 import org.neo4j.driver.exceptions.Neo4jException;
 
 import com.graphbook.elements.PDFText;
-import com.graphbook.server.ApacheHTTP_SimilarityClient;
 import com.graphbook.util.interfaces.IDatabase;
 import com.graphbook.util.interfaces.ISimilarityCalculator;
-import com.graphbook.util.interfaces.ISimilarityClient;
 
 public class NeoDatabase implements IDatabase {
     private Driver driver = null;
@@ -72,22 +72,22 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
-    private final ISimilarityClient client = new ApacheHTTP_SimilarityClient(new SimpleScoreExtractor());
+    // TODO allow for continuing with edge creation, by allowing the user to choose the pdf he wishes to carry on with and then check if some of the nodes/edges are present
     public void createAllEdges(List<PDFText> texts, ISimilarityCalculator calculator, double similarityTreshold) {
         connect();
-        System.out.println("Connected successfully");
+        var start = TimeMeasurer.startMeasuring();
         for (int i = 121; i < 170; i++) { // TODO Adjust the loop parameters // i < texts.size()  and j < texts.size()-1
-            System.out.println(i + "th iteration");
             PDFText text1 = texts.get(i);
             for (int j = i+1; j < 169; j++) {
-                System.out.println(j);
                 PDFText text2 = texts.get(j);
-                // double score = calculator.calculate(text1, text2);
-                double score = (Double) client.getSimilarityResponse(text1.getText(), text2.getText());
+                double score = calculator.calculate(text1, text2);
                 if (score < similarityTreshold) continue;
                 createEdge(text1, text2, score);
             }
         }
+        var end = TimeMeasurer.endMeasuring();
+        String timePassed = TimeMeasurer.getTimePassedString(start, end);
+        new JDataSaver().addToMetadata(Paths.get("C:/Users/macie/GraphBookTestDir/saved/rules_50page_fragment/metadata.txt"), "Time taken to create the Edges", timePassed);
         disconnect();
     }
 

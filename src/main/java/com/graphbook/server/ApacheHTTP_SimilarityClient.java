@@ -1,9 +1,6 @@
 package com.graphbook.server;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.apache.http.HttpEntity;
@@ -15,7 +12,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -118,9 +114,7 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             post.setHeader("Accept", "application/json");
             post.setHeader("Content-type", "application/json");
 
-            logger.info("Executing POST request to {}", CONSTANTS.MY_URI);  // Added logging
             HttpResponse response = client.execute(post);
-            logger.info("POST request executed successfully, received response");  // Added logging
 
             if (response == null) {
                 throw new RuntimeException("Response is null. Look for logged error for the cause");
@@ -135,7 +129,6 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             }
 
             HttpEntity receivedEntity = response.getEntity();
-            logger.info("Entity content: {}", receivedEntity);  // Added logging
             try {
                 String jsonResponse = EntityUtils.toString(receivedEntity);
                 return jsonResponse;

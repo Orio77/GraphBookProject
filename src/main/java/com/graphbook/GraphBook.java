@@ -61,21 +61,36 @@ public class GraphBook {
 
 
 
-    public void readPDF(String pdfName) {
+    public void readPDF() {
         List<PDFText> pages = reader.read(); // TODO adjust the window look and change the method to match the interface
+        String pdfName = InteractivePathChooser.getPDFName();
         saver.savePDF(pages, pdfName);
     }
 
     public void createGraph(int similarityTreshold) {
         List<PDFText> pages = saver.loadPDF();
+        runPythonServer();
         db.save(pages);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         db.createAllEdges(pages, calculator, similarityTreshold);
     }
 
     // Default
     public void createGraph() {
         List<PDFText> pages = saver.loadPDF();
-        db.save(pages);
+        runPythonServer();
+        // db.save(pages); // TODO uncomment
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         db.createAllEdges(pages, calculator, 80.0);
     }
 
@@ -114,18 +129,19 @@ public class GraphBook {
         processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
     
+
+        // Start the process and keep it running
         try {
-            // Start the process and keep it running
             Process process = processBuilder.start();
         } catch (IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        
     }
 
     public static void main(String[] args) {
         GraphBook gb = new GraphBook();
-        gb.runPythonServer();
-        gb.db.createAllEdges(gb.saver.loadPDF(), gb.calculator, 80.0);
+        gb.createGraph();
     }
-    // C:\Users\macie\GraphBookTestDir
 }

@@ -24,15 +24,16 @@ public class JDataSaver implements IDataSaver {
     @Override
     public boolean savePDF(Object o, String pdfName) { // TODO add a UI Interaction with question to save PDF, if yes, Suggest the changing the name of the pdf for easier retrieval when working with database
         long startTime = System.nanoTime();
-        Path curPath = CONSTANTS.SAVED_PDFS_PATH;
-        Path dirName = createDir(curPath);
-        boolean res = writeObject(o, dirName, pdfName);
+        Path curPath = CONSTANTS.SAVED_PDFS_PATH.resolve(pdfName);
+        File freshlySavedPDF = curPath.toFile();
+        freshlySavedPDF.mkdir();
+        boolean res = writeObject(o, curPath, pdfName);
         if (!res) {
             return false;
         }
         long endTime = System.nanoTime();
         double secondsTaken = (double) (endTime - startTime) / 1000000000;
-        createMetadata(dirName, o, secondsTaken);
+        createMetadata(curPath, o, secondsTaken);
         return true;
     }
 
@@ -86,9 +87,19 @@ public class JDataSaver implements IDataSaver {
         }
     }
 
+    public void addToMetadata(Path path, String label, String value) {
+        if (!Files.exists(path)) {
+            return;
+        }
+        try {
+            Files.write(path, new String(label + ": " + value + "\n").getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private boolean writeObject(Object o, Path path, String pdfName) {
         Path filePath = createFile(path.toString(), pdfName);
-        System.out.println(filePath.toString());
         try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(filePath))) {
             out.writeObject(o);
             return true;
@@ -136,7 +147,7 @@ public class JDataSaver implements IDataSaver {
     @SuppressWarnings("unchecked")
     @Override
     public List<PDFText> loadPDF() {
-        File savedPDF = new InteractivePathChooser().chooseSavedPDF(); // TODO adjust the save folders 
+        File savedPDF = InteractivePathChooser.chooseSavedPDF(); // TODO adjust the save folders 
         // TODO add a window informing the user what he is tasked with
         // TODO add (in frontend) a feature to rename the pdf as the user wishes, instruct him for a simple name
         return (List<PDFText>) readSavedPDF(savedPDF); 
@@ -148,4 +159,8 @@ public class JDataSaver implements IDataSaver {
 
     // create folders with name of pdfs, store the pdf inside *check if the file is already saved - delete yes/no
 
+
+    public static void main(String[] args) {
+        new JDataSaver().addToMetadata(Paths.get("C:/Users/macie/GraphBookTestDir/saved/rules_50page_fragment/metadata.txt"), "Time taken to create the Edges", "1 hour");
+    }
 }

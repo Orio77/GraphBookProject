@@ -5,11 +5,11 @@
 
 ~~## 2 Make sure db connection is working
 
-## 3 Add a method to run the python server from Java code
+~~## 3 Add a method to run the python server from Java code
 
-## 4 Make sure llm server connection is working
+~~## 4 Make sure llm server connection is working
 
-## 5 Check whether edges get created
+~~## 5 Check whether edges get created
 
 
 

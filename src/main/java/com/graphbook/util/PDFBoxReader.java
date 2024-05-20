@@ -84,7 +84,7 @@ public class PDFBoxReader implements IPdfReader{
 
     @Override
     public List<PDFText> read() {
-        File chosenPDF = new InteractivePathChooser().choosePDF();
+        File chosenPDF = InteractivePathChooser.choosePDF();
 
         // read the doc
         PDDocument pdf = null;

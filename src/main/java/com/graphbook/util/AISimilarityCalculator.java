@@ -16,7 +16,6 @@ public class AISimilarityCalculator implements ISimilarityCalculator {
 
     @Override
     public double calculate(PDFText text1, PDFText text2) {
-        System.out.println("Texts got sent");
         Object potentialScore = client.getSimilarityResponse(text1.getText(), text2.getText());
         try {
             Thread.sleep(1000);
