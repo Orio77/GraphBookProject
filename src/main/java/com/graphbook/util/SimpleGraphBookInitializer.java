@@ -16,15 +16,16 @@ public class SimpleGraphBookInitializer implements IGraphBookInitializer {
     public void setProjectPath(File chosenDir) {
         // TODO null handling
         Properties properties = new Properties();
-        properties.setProperty("PROJECT_PATH", chosenDir.toPath().toString());
-        File configDir = new File(CONSTANTS.CONFIG_PATH.toString());
+        properties.setProperty("PROJECT_PATH", chosenDir.toPath().toString()); // TODO What if the paths.properties already exists and is empty?
+        File configDir = chosenDir.toPath().resolve("config").toFile();
         if (!configDir.exists()) {
             configDir.mkdir();
         }
-        try (FileOutputStream out = new FileOutputStream(CONSTANTS.CONFIG_PATH.toString())) {
+        try (FileOutputStream out = new FileOutputStream(configDir)) {
             properties.store(out, null);
         } catch (IOException e) {
             LogManager.getLogger(GraphBook.class).error("IOException occured while writing file into the properties file", e.getMessage(), e);
+            throw new RuntimeException("IOException occured while storing Project Path property, check logged error for details");
         }
     }
 
