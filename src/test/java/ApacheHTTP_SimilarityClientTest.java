@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 
 import com.graphbook.server.ApacheHTTP_SimilarityClient;
 import com.graphbook.util.interfaces.IAIResponseSimilarityScoreExtractor;
-import com.graphbook.util.interfaces.IDataSaver;
+import com.graphbook.util.interfaces.IDataManager;
 
 public class ApacheHTTP_SimilarityClientTest {
 
@@ -48,7 +48,7 @@ public class ApacheHTTP_SimilarityClientTest {
     @Test
     public void testLogError() throws IOException {
     // Arrange
-    IDataSaver saver = Mockito.mock(IDataSaver.class);
+    IDataManager saver = Mockito.mock(IDataManager.class);
     Path dirPath = Mockito.mock(Path.class);
     Path filePath = Mockito.mock(Path.class);
 

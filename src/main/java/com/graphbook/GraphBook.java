@@ -12,35 +12,35 @@ import javax.swing.JOptionPane;
 import org.apache.logging.log4j.LogManager;
 
 import com.graphbook.elements.PDFText;
-import com.graphbook.frontend.InteractivePathChooser;
+import com.graphbook.frontend.JFxFileChooser;
 import com.graphbook.server.ApacheHTTP_SimilarityClient;
 import com.graphbook.util.AISimilarityCalculator;
 import com.graphbook.util.CONSTANTS;
-import com.graphbook.util.JDataSaver;
+import com.graphbook.util.JDataManager;
 import com.graphbook.util.NeoDatabase;
-import com.graphbook.util.PDFBoxReader;
+import com.graphbook.util.PDFBoxHandler;
 import com.graphbook.util.SimpleScoreExtractor;
 import com.graphbook.util.interfaces.IAIResponseSimilarityScoreExtractor;
 import com.graphbook.util.interfaces.IAISimilarityClient;
-import com.graphbook.util.interfaces.IDataSaver;
+import com.graphbook.util.interfaces.IDataManager;
 import com.graphbook.util.interfaces.IDatabase;
-import com.graphbook.util.interfaces.IPdfReader;
+import com.graphbook.util.interfaces.IPdfHandler;
 import com.graphbook.util.interfaces.ISimilarityCalculator;
 
 // TODO Make the user create the path for the Code at the beginning, store all the error log folders and others there
 public class GraphBook {
-    private final IPdfReader reader;
+    private final IPdfHandler reader;
     private final IDatabase db;
-    private final IDataSaver saver;
+    private final IDataManager saver;
     private final IAIResponseSimilarityScoreExtractor extractor;
     private final IAISimilarityClient client;
     private final ISimilarityCalculator calculator;
 
     // default
     public GraphBook() {
-        reader = new PDFBoxReader();
+        reader = new PDFBoxHandler();
         db = new NeoDatabase();
-        saver = new JDataSaver();
+        saver = new JDataManager();
         extractor = new SimpleScoreExtractor();
         client = new ApacheHTTP_SimilarityClient(extractor);
         calculator = new AISimilarityCalculator(client);
@@ -48,7 +48,7 @@ public class GraphBook {
         // createNecessaryDirectories();
     }
 
-    public GraphBook(IPdfReader reader, IDatabase db, IDataSaver saver, ISimilarityCalculator calculator, IAIResponseSimilarityScoreExtractor extractor, IAISimilarityClient client) {
+    public GraphBook(IPdfHandler reader, IDatabase db, IDataManager saver, ISimilarityCalculator calculator, IAIResponseSimilarityScoreExtractor extractor, IAISimilarityClient client) {
         this.reader = reader;
         this.db = db;
         this.saver = saver;
@@ -63,7 +63,7 @@ public class GraphBook {
 
     public void readPDF() {
         List<PDFText> pages = reader.read(); // TODO adjust the window look and change the method to match the interface
-        String pdfName = InteractivePathChooser.getPDFName();
+        String pdfName = new JFxFileChooser().getUserInput("PDF Name", "Please enter the name for your pdf");
         saver.savePDF(pages, pdfName);
     }
 
@@ -96,7 +96,7 @@ public class GraphBook {
 
     private void setProjectPath() { 
         JOptionPane.showMessageDialog(null, "Please choose a folder for the project", "Info", JOptionPane.INFORMATION_MESSAGE);
-        Path chosenPath = new InteractivePathChooser().chooseDirectory().toPath();
+        Path chosenPath = new JFxFileChooser().chooseDir().toPath(); // TODO Change and let it be used in the frontend code
         if (chosenPath == null) {
             throw new RuntimeException("You need to chose a folder for the project for it to run conrrectly");
         }
@@ -120,6 +120,8 @@ public class GraphBook {
             savedPdfsDirectory.mkdir();
         }
     }
+
+    // TODO Add method to continue edges creation (ask from which page with a GUI)
 
     public void runPythonServer() {
         ProcessBuilder processBuilder = new ProcessBuilder("C:/Users/macie/anaconda3/envs/GraphBookProjectPyEnv/python.exe", "python_server.py");
