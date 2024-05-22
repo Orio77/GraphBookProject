@@ -21,5 +21,5 @@ public interface IAISimilarityClient extends ISimilarityClient {
      */
     Object getSimilarityResponse(String text1, String text2);   
     
-    Object getSimilarityBatchResponse(List<PDFText> pdf);
+    Object getSimilarityBatchResponse(List<PDFText> pdf, String label);
 }

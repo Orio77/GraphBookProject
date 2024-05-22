@@ -1,4 +1,4 @@
-2024-05-22 16:30:41 ERROR GraphBook:27 - IOException occured while writing file into the properties file
+2024-05-22 16:28:13 ERROR GraphBook:27 - IOException occured while writing file into the properties file
 java.io.FileNotFoundException: C:\Users\macie\GraphBookTestDir\config (Access is denied)
 	at java.base/java.io.FileOutputStream.open0(Native Method) ~[?:?]
 	at java.base/java.io.FileOutputStream.open(FileOutputStream.java:293) ~[?:?]

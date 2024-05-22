@@ -123,6 +123,11 @@ public class NeoDatabase implements IDatabase {
         disconnect();
     }
 
+    // HashMap = {id, {other_id, weight(double)}}
+    public void createEdges(Map<Integer, List<List<Double>>> result) {
+
+    }
+
     public void clearAllEdges() {
         connect();
         try (Session session = driver.session()) {

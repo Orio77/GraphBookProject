@@ -21,7 +21,7 @@ public class SimpleGraphBookInitializer implements IGraphBookInitializer {
         if (!configDir.exists()) {
             configDir.mkdir();
         }
-        try (FileOutputStream out = new FileOutputStream(configDir)) {
+        try (FileOutputStream out = new FileOutputStream(configDir.toPath().resolve("paths.properties").toFile())) {
             properties.store(out, null);
         } catch (IOException e) {
             LogManager.getLogger(GraphBook.class).error("IOException occured while writing file into the properties file", e.getMessage(), e);

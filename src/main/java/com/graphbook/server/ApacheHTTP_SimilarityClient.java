@@ -1,6 +1,7 @@
 package com.graphbook.server;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,8 +85,8 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
     }
 
     @Override
-    public Object getSimilarityBatchResponse(List<PDFText> pdf) {
-        String response = sendPDF(pdf);
+    public Object getSimilarityBatchResponse(List<PDFText> pdf, String label) {
+        String response = sendPDF(pdf, label);
         if (response == null) {
             throw new RuntimeException("Received response from the Python Server was null. Check error log for details");
         }
@@ -183,7 +184,7 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
         }
     }
 
-    private String sendPDF(List<PDFText> pdf) {
+    private String sendPDF(List<PDFText> pdf, String label) {
         RequestConfig requestConfig = RequestConfig.custom()
             .setSocketTimeout(30000)  // socket timeout
             .setConnectTimeout(30000)  // connection timeout
@@ -201,7 +202,7 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             }
 
             // Convert the texts to JSON
-            String json = MAPPER.writeValueAsString(Map.of("texts", pdf));
+            String json = MAPPER.writeValueAsString(Map.of("texts", pdf, "label", label));
 
             // Set the entity and headers
             StringEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
