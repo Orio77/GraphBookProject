@@ -9,7 +9,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 
-public class CONSTANTS {
+public class CONSTANTS { // TODO create a class environment handler instead and put all the paths there
     public static final Path PROJECT_PATH = loadProjectPath();
     public static final Path ERROR_LOG_PATH = Paths.get("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/src/main/java/com/graphbook/server/logs/errorLog");
     public static final URI MY_URI = URI.create("http://localhost:5000/similarity");
@@ -20,11 +20,26 @@ public class CONSTANTS {
     private static final Path PROPERTIES_PATH = PROJECT_PATH.resolve("config/paths.properties");
     public static final Path SAVED_PDFS_PATH = PROJECT_PATH.resolve("saved");
 
+    // private static Path loadProjectPath() {
+    //     System.out.println(00);
+    //     Properties properties = new Properties();
+    //     try (FileInputStream in = new FileInputStream(PROPERTIES_PATH.toString())) {
+    //         System.out.println(11);
+    //         properties.load(in);
+    //         return Paths.get(properties.getProperty("PROJECT_PATH"));
+    //     } catch (IOException e) {
+    //         LogManager.getLogger(CONSTANTS.class).error("IOException occured while setting the config project path.", e.getMessage(), e);
+    //         throw new RuntimeException("IOException occured while loading project path from properties file. Check the logged error for details.");
+    //     }
+    // }
+
     private static Path loadProjectPath() {
-        Properties properties = new Properties();
-        try (FileInputStream in = new FileInputStream(PROPERTIES_PATH.toString())) {
-            properties.load(in);
-            return Paths.get(properties.getProperty("PROJECT_PATH"));
+        Properties property = new Properties();
+        
+        try (FileInputStream in = new FileInputStream(SimpleGraphBookInitializer.DOTENV_PATH.toFile())) {
+            property.load(in);
+            String projectPath = property.getProperty("PROJECT_PATH");
+            return Paths.get(projectPath);
         } catch (IOException e) {
             LogManager.getLogger(CONSTANTS.class).error("IOException occured while setting the config project path.", e.getMessage(), e);
             throw new RuntimeException("IOException occured while loading project path from properties file. Check the logged error for details.");

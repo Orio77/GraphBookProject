@@ -8,7 +8,7 @@ class LLM(ABC):
         pass
 
     @abstractmethod
-    def calculate_similarity_batch(self, texts):
+    def calculate_similarity_batch(self, texts, label):
         pass
 
     

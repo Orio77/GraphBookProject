@@ -21,6 +21,8 @@ import com.graphbook.util.interfaces.IPdfHandler;
 import com.graphbook.util.interfaces.IResponseHandler;
 import com.graphbook.util.interfaces.ISimilarityClient;
 
+import javafx.stage.Stage;
+
 public class GraphBookGUIManager {
     private final IFileChooser fileChooser;
     private final IPdfHandler pdfHandler;
@@ -31,8 +33,8 @@ public class GraphBookGUIManager {
     private final IResponseHandler responseHandler;
 
     // default
-    public GraphBookGUIManager() {
-        fileChooser = new JFxFileChooser();
+    public GraphBookGUIManager(Stage primaryStage) {
+        fileChooser = new JFxFileChooserReworked(primaryStage);
         pdfHandler = new PDFBoxHandler();
         database = new NeoDatabase();
         dataManager = new JDataManager();
@@ -82,12 +84,12 @@ public class GraphBookGUIManager {
 
     // TODO Start Process of Edge Creation
     public HashMap<Integer, List<List<Double>>> getEdgeValues(List<PDFText> pdf) {
-        runPythonServer();
-        try {
-            Thread.sleep(8000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        // runPythonServer();
+        // try {
+        //     Thread.sleep(8000);
+        // } catch (InterruptedException e) {
+        //     Thread.currentThread().interrupt();
+        // }
         String label = fileChooser.getUserInput("PDF ID", "Please provide a shortcut for your pdf, it will serve as an unique ID (3-8) letters long: ");
         Object res = client.getSimilarityBatchResponse(pdf, label);
         return responseHandler.handle(res);
@@ -98,6 +100,9 @@ public class GraphBookGUIManager {
 
 
     // TODO Continue with Edge Creation - automatic checkpoint / chosen checkpoint with info of page recommended to continue from
+    public HashMap<Integer, List<List<Double>>> continueWithEdgeCreation(List<PDFText> pdf) {
+        return null;
+    }
     // frontend Interface
     // Backend Interface
 
@@ -109,8 +114,8 @@ public class GraphBookGUIManager {
         initializer.setProjectPath(projectDir);
     }
     // frontend Interface               ____
-    // Backend Interface                    \
-//                                           \
+    // Backend Interface                    /
+//                                           /
                     //                          Merge -> void initializeProject()
 //                                           /
     // TODO create necessary directories    /
@@ -120,10 +125,16 @@ public class GraphBookGUIManager {
     // frontend Interface
     // Backend Interface
 
+    // TODO Initialize Project
+    public void initializeProject() {
+        setProjectPath();
+        createNecessaryDirectories();
+    }
+
 
     // TODO runPythonServer()
     public void runPythonServer() {
-        ProcessBuilder processBuilder = new ProcessBuilder("C:/Users/macie/anaconda3/envs/GraphBookProjectPyEnv/python.exe", "python_server.py");
+        ProcessBuilder processBuilder = new ProcessBuilder(CONSTANTS.PYTHON_SERVER_PATH.toString(), CONSTANTS.PYTHON_SERVER_FILENAME); // TODO Handle null paths
         processBuilder.directory(CONSTANTS.PYTHON_SERVER_PATH.toFile());
     
         // Redirect the process's output to the Java program's output
@@ -133,7 +144,7 @@ public class GraphBookGUIManager {
 
         // Start the process and keep it running
         try {
-            Process process = processBuilder.start();
+            processBuilder.start(); // Possible to keep the Process object to control the running server | return it?
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -141,8 +152,4 @@ public class GraphBookGUIManager {
     }
     // frontend Interface
     // Backend Interface
-
-    public static void main(String[] args) {
-        new GraphBookGUIManager().setProjectPath();
-    }
 }

@@ -52,9 +52,7 @@ public class JFxFileChooser implements IFileChooser { // TODO implement an inter
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();  // Restore the interrupted status
             e.printStackTrace();
-        } finally {
-            Platform.exit();  // Clean up JavaFX resources
-        }
+        } 
     
         return result.get();  // Return the selected file, or null if no file was selected
     }
@@ -91,9 +89,7 @@ public class JFxFileChooser implements IFileChooser { // TODO implement an inter
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();  // Restore the interrupted status
             e.printStackTrace();
-        } finally {
-            Platform.exit();  // Clean up JavaFX resources
-        }
+        } 
     
         return result.get();  // Return the selected file, or null if no file was selected
     }
@@ -124,9 +120,7 @@ public class JFxFileChooser implements IFileChooser { // TODO implement an inter
     } catch (InterruptedException e) {
         Thread.currentThread().interrupt();  // Restore the interrupted status
         e.printStackTrace();
-    } finally {
-        Platform.exit();  // Clean up JavaFX resources
-    }
+    } 
 
     return result.get();  // Return the selected directory, or null if cancelled or not selected
 }
@@ -161,9 +155,7 @@ public class JFxFileChooser implements IFileChooser { // TODO implement an inter
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();  // Restore the interrupted status
             e.printStackTrace();
-        } finally {
-            Platform.exit();  // Clean up JavaFX resources
-        }
+        } 
 
         return result.get();  // Return the selected directory, or null if cancelled or not selected
     }
@@ -199,9 +191,7 @@ public class JFxFileChooser implements IFileChooser { // TODO implement an inter
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();  // Restore interrupted status
             e.printStackTrace();
-        } finally {
-            Platform.exit();  // Ensure JavaFX resources are cleaned up
-        }
+        } 
     
         return result.get();  // Return the selected and validated file or null
     }
@@ -241,9 +231,7 @@ public class JFxFileChooser implements IFileChooser { // TODO implement an inter
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();  // Restore interrupted status
             e.printStackTrace();
-        } finally {
-            Platform.exit();  // Ensure JavaFX resources are cleaned up
-        }
+        } 
     
         return result.get();  // Return the selected and validated file or null
     }
@@ -303,9 +291,11 @@ public class JFxFileChooser implements IFileChooser { // TODO implement an inter
             e.printStackTrace();
         }
     
-        Platform.exit();
-    
         return (result.get().isEmpty()) ? "unnamed_PDF" : result.get();
+    }
+
+    public void cleanUp() {
+        Platform.exit();
     }
 
     private boolean validateDirectory(File initialDirectory) {

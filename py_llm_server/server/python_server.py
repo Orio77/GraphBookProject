@@ -4,9 +4,7 @@ import re
 import traceback
 import atexit
 from dotenv import load_dotenv
-load_dotenv("C:/Users/macie/iCloudDrive/MyProjects/graph-book-core/py_llm_server/environment/.env")
-
-LOG_DIR = os.getenv('ERROR_LOG_DIR')
+load_dotenv("C:/Users/macie/Desktop/GBP/graph-book-core/py_llm_server/environment/.env")
 
 from flask import Flask
 from flask import request
@@ -31,8 +29,6 @@ def calculate_similarity():
         text1 = data['text1']
         text2 = data['text2']
     except Exception as e:
-        logReceivedData
-        logErrorCause(exception=e)
         return jsonify({"error": f"Missing key: {e}"}), 400
 
     handler = HF_LLMHandler(Mistral())
@@ -49,11 +45,12 @@ def calculate_similarity_batch():
 
     try:
         texts = data['texts']
+        label = data['label']
     except Exception as e:
         return jsonify({"error": f"Missing key {e}"}), 400
     
     handler = HF_LLMHandler(Mistral())
-    scores = handler.get_similarity_Scores(texts=texts) # Map.of(Integer=page_number, int[]{Integer=other_page_number, Double=score})
+    scores = handler.get_similarity_Scores(texts=texts, label=label) # Map.of(Integer=page_number, int[]{Integer=other_page_number, Double=score})
 
     response = {'similarity_batch': scores}
 
@@ -69,17 +66,12 @@ def _debug_calculate_similarity():
         data = request.json
         print("JSON data parsed successfully")
 
-        print("Logging received data")
-        # logReceivedData(data=request.data, headers=request.headers, received_json=json.dumps(request.json))
-        print("Received data logged successfully")
-
         print("Trying to extract text1 and text2 from data")
         text1 = data['text1']
         text2 = data['text2']
         print("Extracted text1 and text2 successfully")
     except KeyError as e:
         print("Caught KeyError")
-        logErrorCause(exception=e)
         return jsonify({"error": f"Missing key: {e}"}), 400
     except Exception as e:
         print("caught an exception")
@@ -96,41 +88,28 @@ def _debug_calculate_similarity():
 
     return jsonify(response)
 
-def logErrorCause(exception):
-    with open(getPreciseLogPath(), 'a') as f:
-        f.write(f"Missing key in received JSON: {exception}\n")
-
-def logReceivedData(data, headers, received_json):
-    with open(getPreciseLogPath(), 'a') as f:
-        f.write("PYTHON:\n" +
-                "Received data: " + str(data) + "\n" +
-                "Received headers: " + str(headers) + "\n" +
-                "Received json: " + str(received_json) + "\n")
-
-def getPreciseLogPath():
-    folders = os.listdir(LOG_DIR)
-
-    def get_number(folder_name):
-        match = re.search(r'\d+$', folder_name)
-        return int(match.group()) if match else 0
-    
-    folders.sort(key=get_number)
-
-    LOG_PATH = os.path.join(LOG_DIR, folders[-1])
-    print(folders[-1])
-    return LOG_PATH
-
-def getPath():
-    print("Current directory:", os.getcwd)
-    print("\nPython path:")
-    for path in sys.path:
-        print(path)
+# TODO @app.route('continue_calculations', methods=['?'])
 
 
 def closing_Message():
     print("Server is shutting down...")
 
 atexit.register(closing_Message)
+
+def test_similarity_scores_mistral():
+    texts = [
+    "Machine learning is a method of data analysis that automates analytical model building. It is a branch of artificial intelligence based on the idea that systems can learn from data, identify patterns and make decisions with minimal human intervention.",
+    "Because of new computing technologies, machine learning today is not like machine learning of the past. It was born from pattern recognition and the theory that computers can learn without being programmed to perform specific tasks.",
+    "Researchers interested in artificial intelligence wanted to see if computers could learn from data. The iterative aspect of machine learning is important because as models are exposed to new data, they are able to independently adapt.",
+    "They learn from previous computations to produce reliable, repeatable decisions and results. It’s a science that’s not new – but one that has gained fresh momentum.",
+    "While many machine learning algorithms have been around for a long time, the ability to automatically apply complex mathematical calculations to big data – over and over, faster and faster – is a recent development.",
+    "Machine learning algorithms are often categorized as supervised or unsupervised. Supervised algorithms require a data scientist or data analyst with machine learning skills to provide both input and desired output, in addition to furnishing feedback about the accuracy of predictions during training.",
+    "Unsupervised algorithms, on the other hand, use an approach called deep learning to review data and arrive at conclusions. Unsupervised learning algorithms are used when the information used to train is neither classified nor labeled."
+    ]
+    label = 'tst'
+    mist = Mistral()
+    HF_LLMHandler(mist).get_similarity_Scores(texts=texts, label=label)
+    mist.print_saved_results()
 
 
 if __name__ == "__main__":
