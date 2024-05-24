@@ -5,21 +5,21 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import com.graphbook.element.PDFText;
+import com.graphbook.backend.model.PDFText;
+import com.graphbook.backend.service.IDataManager;
+import com.graphbook.backend.service.IDatabase;
+import com.graphbook.backend.service.IGraphBookInitializer;
+import com.graphbook.backend.service.IPdfHandler;
+import com.graphbook.backend.service.IResponseHandler;
+import com.graphbook.backend.service.impl.dataManagers.JDataManager;
+import com.graphbook.backend.service.impl.dataManagers.PDFBoxHandler;
+import com.graphbook.backend.service.impl.database.NeoDatabase;
+import com.graphbook.backend.service.impl.initializer.SimpleGraphBookInitializer;
 import com.graphbook.frontend.interfaces.IFileChooser;
-import com.graphbook.server.ApacheHTTP_SimilarityClient;
-import com.graphbook.server.SimpleResponseHandler;
+import com.graphbook.server.ISimilarityClient;
+import com.graphbook.server.impl.ApacheHTTP_SimilarityClient;
+import com.graphbook.server.impl.SimpleResponseHandler;
 import com.graphbook.util.CONSTANTS;
-import com.graphbook.util.JDataManager;
-import com.graphbook.util.NeoDatabase;
-import com.graphbook.util.PDFBoxHandler;
-import com.graphbook.util.SimpleGraphBookInitializer;
-import com.graphbook.util.interfaces.IDataManager;
-import com.graphbook.util.interfaces.IDatabase;
-import com.graphbook.util.interfaces.IGraphBookInitializer;
-import com.graphbook.util.interfaces.IPdfHandler;
-import com.graphbook.util.interfaces.IResponseHandler;
-import com.graphbook.util.interfaces.ISimilarityClient;
 
 import javafx.stage.Stage;
 

@@ -1,6 +1,6 @@
-package com.graphbook.util;
+package com.graphbook.backend.service.impl.responseHandlers;
 
-import com.graphbook.util.interfaces.IAIResponseSimilarityScoreExtractor;
+import com.graphbook.backend.service.IAIResponseSimilarityScoreExtractor;
 
 public class SimpleScoreExtractor implements IAIResponseSimilarityScoreExtractor {
     

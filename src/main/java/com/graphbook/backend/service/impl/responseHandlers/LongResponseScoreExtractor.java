@@ -1,9 +1,9 @@
-package com.graphbook.util;
+package com.graphbook.backend.service.impl.responseHandlers;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.graphbook.util.interfaces.IAIResponseSimilarityScoreExtractor;
+import com.graphbook.backend.service.IAIResponseSimilarityScoreExtractor;
 
 public class LongResponseScoreExtractor implements IAIResponseSimilarityScoreExtractor {
     

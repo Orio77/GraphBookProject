@@ -1,4 +1,4 @@
-package com.graphbook.util;
+package com.graphbook.backend.service.impl.initializer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,7 +11,8 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.graphbook.util.interfaces.IGraphBookInitializer;
+import com.graphbook.backend.service.IGraphBookInitializer;
+import com.graphbook.util.CONSTANTS;
 
 public class SimpleGraphBookInitializer implements IGraphBookInitializer {
     public static final Path DOTENV_PATH = Paths.get("py_llm_server/environment/.env");

@@ -1,10 +1,10 @@
-package com.graphbook.util.interfaces;
+package com.graphbook.backend.service;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.graphbook.element.PDFText;
+import com.graphbook.backend.model.PDFText;
 
 public interface IDataManager {
     

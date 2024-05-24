@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.graphbook.element.PDFText;
+import com.graphbook.backend.model.PDFText;
 import com.graphbook.frontend.interfaces.IFileChooser;
 
 import javafx.application.Platform;

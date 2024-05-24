@@ -1,4 +1,4 @@
-package com.graphbook.util.interfaces;
+package com.graphbook.backend.service;
 
 import java.io.File;
 

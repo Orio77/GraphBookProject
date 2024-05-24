@@ -1,4 +1,4 @@
-package com.graphbook.element;
+package com.graphbook.backend.model;
 
 import java.io.Serializable;
 

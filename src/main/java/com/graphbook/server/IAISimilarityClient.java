@@ -1,8 +1,8 @@
-package com.graphbook.util.interfaces;
+package com.graphbook.server;
 
 import java.util.List;
 
-import com.graphbook.element.PDFText;
+import com.graphbook.backend.model.PDFText;
 
 /**
  * An interface that defines a contract for classes that serve as Java server part.

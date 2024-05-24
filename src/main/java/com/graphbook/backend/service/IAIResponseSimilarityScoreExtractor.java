@@ -1,4 +1,4 @@
-package com.graphbook.util.interfaces;
+package com.graphbook.backend.service;
 
 /**
  * An interface for classes that extract similarity score out of AI responses.

@@ -1,7 +1,6 @@
-package com.graphbook.server;
+package com.graphbook.server.impl;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,10 +20,10 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.graphbook.element.PDFText;
+import com.graphbook.backend.model.PDFText;
+import com.graphbook.backend.service.IAIResponseSimilarityScoreExtractor;
+import com.graphbook.server.IAISimilarityClient;
 import com.graphbook.util.CONSTANTS;
-import com.graphbook.util.interfaces.IAIResponseSimilarityScoreExtractor;
-import com.graphbook.util.interfaces.IAISimilarityClient;
 
 /**
  * ApacheHTTP_SimilarityClient is a class that communicates with a local AI service via HTTP requests.

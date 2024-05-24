@@ -1,4 +1,4 @@
-package com.graphbook.util;
+package com.graphbook.backend.service.impl.dataManagers;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,8 +15,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.graphbook.element.PDFText;
-import com.graphbook.util.interfaces.IDataManager;
+import com.graphbook.backend.model.PDFText;
+import com.graphbook.backend.service.IDataManager;
+import com.graphbook.util.CONSTANTS;
 
 public class JDataManager implements IDataManager {
     

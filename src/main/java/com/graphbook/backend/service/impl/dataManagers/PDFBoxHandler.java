@@ -1,4 +1,4 @@
-package com.graphbook.util;
+package com.graphbook.backend.service.impl.dataManagers;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,8 +9,8 @@ import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-import com.graphbook.element.PDFText;
-import com.graphbook.util.interfaces.IPdfHandler;
+import com.graphbook.backend.model.PDFText;
+import com.graphbook.backend.service.IPdfHandler;
 
 public class PDFBoxHandler implements IPdfHandler{
 

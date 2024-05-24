@@ -1,6 +1,5 @@
-package com.graphbook.util;
+package com.graphbook.backend.service.impl.database;
 
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,9 +12,8 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
 import org.neo4j.driver.exceptions.Neo4jException;
 
-import com.graphbook.element.PDFText;
-import com.graphbook.util.interfaces.IDatabase;
-import com.graphbook.util.interfaces.ISimilarityCalculator;
+import com.graphbook.backend.model.PDFText;
+import com.graphbook.backend.service.IDatabase;
 
 public class NeoDatabase implements IDatabase {
     private Driver driver = null;
@@ -89,25 +87,6 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
-    // TODO allow for continuing with edge creation, by allowing the user to choose the pdf he wishes to carry on with and then check if some of the nodes/edges are present
-    public void createAllEdges(List<PDFText> texts, ISimilarityCalculator calculator, double similarityTreshold) {
-        connect();
-        var start = TimeMeasurer.startMeasuring();
-        for (int i = 0; i < texts.size(); i++) {
-            PDFText text1 = texts.get(i);
-            for (int j = i+1; j < texts.size()-1; j++) {
-                PDFText text2 = texts.get(j);
-                double score = calculator.calculate(text1, text2);
-                if (score < similarityTreshold) continue;
-                createEdge(text1, text2, score, i);
-            }
-        }
-        var end = TimeMeasurer.endMeasuring();
-        String timePassed = TimeMeasurer.getTimePassedString(start, end);
-        new JDataManager().addToMetadata(Paths.get("C:/Users/macie/GraphBookTestDir/saved/rules_50page_fragment/metadata.txt"), "Time taken to create the Edges", timePassed);
-        disconnect();
-    }
-
     public void createWeightedRelationships() {
         connect();
         try (Session session = driver.session()) {
@@ -158,5 +137,11 @@ public class NeoDatabase implements IDatabase {
 
     public static void main(String[] args) {
         new NeoDatabase().createWeightedRelationships();
+    }
+
+    @Override
+    public void createAllEdges(List<PDFText> texts, double similarityTreshold) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createAllEdges'");
     }
 }

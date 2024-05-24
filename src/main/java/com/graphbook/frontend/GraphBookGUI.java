@@ -3,7 +3,7 @@ package com.graphbook.frontend;
 import java.util.HashMap;
 import java.util.List;
 
-import com.graphbook.element.PDFText;
+import com.graphbook.backend.model.PDFText;
 
 import javafx.application.Application;
 import javafx.concurrent.Task;
