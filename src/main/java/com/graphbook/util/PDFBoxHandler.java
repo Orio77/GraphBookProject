@@ -9,7 +9,7 @@ import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 import com.graphbook.util.interfaces.IPdfHandler;
 
 public class PDFBoxHandler implements IPdfHandler{

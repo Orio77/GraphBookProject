@@ -2,7 +2,7 @@ package com.graphbook.util.interfaces;
 
 import java.util.List;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 
 /**
  * An interface that defines a contract for classes that serve as Java server part.

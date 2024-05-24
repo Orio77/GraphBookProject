@@ -1,6 +1,6 @@
 package com.graphbook.util;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 import com.graphbook.util.interfaces.ISimilarityCalculator;
 import com.graphbook.util.interfaces.ISimilarityClient;
 

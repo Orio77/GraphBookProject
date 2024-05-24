@@ -13,7 +13,7 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
 import org.neo4j.driver.exceptions.Neo4jException;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 import com.graphbook.util.interfaces.IDatabase;
 import com.graphbook.util.interfaces.ISimilarityCalculator;
 

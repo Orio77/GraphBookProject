@@ -3,9 +3,10 @@ package com.graphbook.frontend;
 import java.util.HashMap;
 import java.util.List;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 
 import javafx.application.Application;
+import javafx.concurrent.Task;
 import javafx.stage.Stage;
 
 public class GraphBookGUI extends Application {
@@ -21,12 +22,20 @@ public class GraphBookGUI extends Application {
 
         primaryStage.show();
 
-        List<PDFText> pdf = manager.loadSavedPDF();
-        HashMap<Integer, List<List<Double>>> res = manager.getEdgeValues(pdf);
-        res.entrySet().stream().forEach(entry -> {
-            System.out.println("Key: " + entry.getKey());
-            System.out.println("Val: " + entry.getValue());
-        });
+        Task<Void> task = new Task<>() {
+
+            @Override
+            protected Void call() throws Exception {
+                List<PDFText> pdf = manager.loadSavedPDF();
+                HashMap<Integer, List<List<Double>>> res = manager.getEdgeValues(pdf);
+                res.entrySet().stream().forEach(entry -> {
+                    System.out.println("Key: " + entry.getKey());
+                    System.out.println("Val: " + entry.getValue());
+                });
+                return null;
+            }
+        };
+        new Thread(task).start();
     }
 
     public static void main(String[] args) {

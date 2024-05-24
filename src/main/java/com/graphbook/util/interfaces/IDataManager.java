@@ -4,7 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 
 public interface IDataManager {
     

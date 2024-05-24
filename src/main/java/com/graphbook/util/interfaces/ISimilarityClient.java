@@ -2,7 +2,7 @@ package com.graphbook.util.interfaces;
 
 import java.util.List;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 
 public interface ISimilarityClient {
     

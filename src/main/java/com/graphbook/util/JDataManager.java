@@ -15,7 +15,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 import com.graphbook.util.interfaces.IDataManager;
 
 public class JDataManager implements IDataManager {

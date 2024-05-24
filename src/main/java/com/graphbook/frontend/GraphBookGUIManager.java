@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import com.graphbook.elements.PDFText;
+import com.graphbook.element.PDFText;
 import com.graphbook.frontend.interfaces.IFileChooser;
 import com.graphbook.server.ApacheHTTP_SimilarityClient;
 import com.graphbook.server.SimpleResponseHandler;
