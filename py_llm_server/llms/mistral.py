@@ -7,13 +7,13 @@ from dotenv import load_dotenv
 load_dotenv("C:/Users/macie/Desktop/GBP/graph-book-core/py_llm_server/environment/.env")
 PROJECT_PATH=os.getenv('PROJECT_PATH')
 import shutil
-import pickle
+import json
 import pprint
 
 class Mistral(LLM):  
-    print(PROJECT_PATH)
     def __init__(self, save_path=None):
-        save_path = PROJECT_PATH
+        save_path = PROJECT_PATH.replace('\\', '/')
+        print(save_path)
         if save_path is None:
             raise ValueError("save_path and PROJECT_PATH are both null. Please provide a valid path")
         self.save_path = os.path.join(save_path, 'scores')
@@ -62,26 +62,23 @@ class Mistral(LLM):
     
     def calculate_similarity_batch(self, texts, label):
         # Serialize texts and label for checkpoint
-        with open(self.texts_path, 'wb') as f:
-            pickle.dump(texts, f)
-        with open(self.label_path, 'wb') as f:
-            pickle.dump(label, f)
+        with open(self.texts_path, 'w') as f:
+            json.dump(texts, f)
+        with open(self.label_path, 'w') as f:
+            json.dump(label, f)
 
         # Load existing results if available
         if os.path.exists(self.results_path):
-            with open(self.results_path, 'rb') as f:
-                results = pickle.load(f)
+            with open(self.results_path, 'r') as f:
+                results = json.load(f)
         else:
             results = {}
-            with open(self.results_path, 'wb') as f:
-                pickle.dump(label, f)
+            with open(self.results_path, 'w') as f:
+                json.dump(label, f)
 
         length = len(texts)
         start_index = len(results)  # Determine where to resume
-        print("Save path: " + self.save_path)
-        print("label: " + label)
         self.output_dir = os.path.join(self.save_path, label)
-        print("result dir: " + self.output_dir)
         # Ensure the output directory exists
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
@@ -131,31 +128,25 @@ class Mistral(LLM):
                 # Store results in dictionary
                 if i not in results:
                     results[i] = []
-                results[i].append([j, score])
+                results[int(i)].append({"el1": int(j),"el2": float(score)})
 
             # Save periodically after every page iteration
-            with open(self.results_path, 'wb') as f:
-                        pickle.dump(results, f)
+            with open(self.results_path, 'w') as f:
+                        json.dump(results, f)
                     
 
         # Final save before moving the file
-        with open(self.results_path, 'wb') as f:
-            pickle.dump(results, f)
+        with open(self.results_path, 'w') as f:
+            json.dump(results, f)
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
-        print("moving the file from: " + self.results_path)
-        print("to: " + os.path.join(self.output_dir, self.results_path))
         # Move the final file to the dedicated directory
         shutil.move(self.results_path, os.path.join(self.output_dir, os.path.basename(self.results_path)))
-        print("file moved")
 
-        print("removing the file at: " + self.texts_path)
-        print("removing the file at: " + self.label_path)
         os.remove(self.texts_path)
         os.remove(self.label_path)
-        print("files removed")
 
         return results  
 
@@ -164,31 +155,36 @@ class Mistral(LLM):
             raise FileNotFoundError("Checkpoint files not found.")
         
         with open(self.texts_path, 'rb') as f:
-            texts = pickle.load(f)
+            texts = json.load(f)
         with open(self.label_path, 'rb') as f:
-            label = pickle.load(f)
+            label = json.load(f)
 
         # TODO What if there are no such files (throw an exception)
 
         return self.calculate_similarity_batch(texts=texts, label=label)
 
     def print_saved_results(self):
-        path = os.path.join(self.output_dir, 'results.pkl')
+        path = os.path.join("C:\\Users\\macie\\GraphBookTestDir\\scores", 'results.pkl')
         if os.path.exists(path=path):
                 with open(path, 'rb') as f:
-                    results = pickle.load(f)
+                    results = json.load(f)
                     pprint.pprint(results)
 
 
 if __name__ == "__main__":
-    texts = [
-    "Machine learning is a method of data analysis that automates analytical model building. It is a branch of artificial intelligence based on the idea that systems can learn from data, identify patterns and make decisions with minimal human intervention.",
-    "Because of new computing technologies, machine learning today is not like machine learning of the past. It was born from pattern recognition and the theory that computers can learn without being programmed to perform specific tasks.",
-    "Researchers interested in artificial intelligence wanted to see if computers could learn from data. The iterative aspect of machine learning is important because as models are exposed to new data, they are able to independently adapt.",
-    "They learn from previous computations to produce reliable, repeatable decisions and results. It’s a science that’s not new – but one that has gained fresh momentum.",
-    "While many machine learning algorithms have been around for a long time, the ability to automatically apply complex mathematical calculations to big data – over and over, faster and faster – is a recent development.",
-    "Machine learning algorithms are often categorized as supervised or unsupervised. Supervised algorithms require a data scientist or data analyst with machine learning skills to provide both input and desired output, in addition to furnishing feedback about the accuracy of predictions during training.",
-    "Unsupervised algorithms, on the other hand, use an approach called deep learning to review data and arrive at conclusions. Unsupervised learning algorithms are used when the information used to train is neither classified nor labeled."
-    ]
-    label = 'tst'
-    Mistral().calculate_similarity_batch(texts=texts, label=label)
+    # texts = [
+    # "Machine learning is a method of data analysis that automates analytical model building. It is a branch of artificial intelligence based on the idea that systems can learn from data, identify patterns and make decisions with minimal human intervention.",
+    # "Because of new computing technologies, machine learning today is not like machine learning of the past. It was born from pattern recognition and the theory that computers can learn without being programmed to perform specific tasks.",
+    # "Researchers interested in artificial intelligence wanted to see if computers could learn from data. The iterative aspect of machine learning is important because as models are exposed to new data, they are able to independently adapt.",
+    # "They learn from previous computations to produce reliable, repeatable decisions and results. It’s a science that’s not new – but one that has gained fresh momentum.",
+    # "While many machine learning algorithms have been around for a long time, the ability to automatically apply complex mathematical calculations to big data – over and over, faster and faster – is a recent development.",
+    # "Machine learning algorithms are often categorized as supervised or unsupervised. Supervised algorithms require a data scientist or data analyst with machine learning skills to provide both input and desired output, in addition to furnishing feedback about the accuracy of predictions during training.",
+    # "Unsupervised algorithms, on the other hand, use an approach called deep learning to review data and arrive at conclusions. Unsupervised learning algorithms are used when the information used to train is neither classified nor labeled."
+    # ]
+    # label = 'tst'
+    # Mistral().calculate_similarity_batch(texts=texts, label=label)
+    path = os.path.join("C:\\Users\\macie\\GraphBookTestDir\\scores", 'results.pkl')
+    if os.path.exists(path=path):
+            with open(path, 'rb') as f:
+                results = json.load(f)
+                pprint.pprint(results)

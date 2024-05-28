@@ -1,5 +1,6 @@
 package com.graphbook.backend.service.impl.database;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +14,7 @@ import org.neo4j.driver.Values;
 import org.neo4j.driver.exceptions.Neo4jException;
 
 import com.graphbook.backend.model.PDFText;
+import com.graphbook.backend.model.Pair;
 import com.graphbook.backend.service.IDatabase;
 
 public class NeoDatabase implements IDatabase {
@@ -48,8 +50,12 @@ public class NeoDatabase implements IDatabase {
                     PDFText::getText
                 ));
 
+            AtomicInteger elementIndex = new AtomicInteger(0);
             String query = parameters.keySet().stream()
-                .map(key -> String.format("CREATE (:Page:`%s` {text: $%s})", safeLabel, key))
+                .map(key -> {
+                    int idx = elementIndex.getAndIncrement();
+                    return String.format("CREATE (n%d:Page:`%s` {text: $%s, elementId: '%s%d'})", idx, safeLabel, key, safeLabel, idx);
+                })
                 .collect(Collectors.joining(" "));
 
             // Execute all node creations in a single transaction if the query is not empty
@@ -103,8 +109,53 @@ public class NeoDatabase implements IDatabase {
     }
 
     // HashMap = {id, {other_id, weight(double)}}
-    public void createEdges(Map<Integer, List<List<Double>>> result) {
+    public void createEdgess(HashMap<Integer, List<Pair<Integer, Double>>> result, String label) {
+        connect();
+        try (Session session = driver.session()) {
+            for (Map.Entry<Integer, List<Pair<Integer, Double>>> entry : result.entrySet()) {
+                int id = entry.getKey();
+                List<Pair<Integer, Double>> edges = entry.getValue();
+                for (Pair<Integer, Double> edge : edges) {
+                    int other_id = edge.getEl1();
+                    double weight = edge.getEl2();
+                    String query = "MATCH (a:" + label + "{id: " + id + "}), (b:" + label + "{id: " + other_id + "}) " + 
+                                    "MERGE (a)-[r:RELATED]->(b) " +
+                                    "ON CREATE SET r.weight = " + weight + " " + 
+                                    "RETURN a, b, r";
+                    session.run(query);
+                }
+            }
+        } 
+        finally {
+            disconnect();
+        }
+    }
 
+    public void createEdges(Map<Integer, List<Pair<Integer, Double>>> result, String label) {
+        int batchSize = 1000; // Adjust based on your system's capabilities
+        List<Map<String, Object>> edgeList = result.entrySet().stream()
+            .flatMap(entry -> entry.getValue().stream()
+                .map(edge -> Map.<String, Object>of(
+                    "id", entry.getKey(),
+                    "other_id", edge.getEl1(),
+                    "weight", edge.getEl2()
+                ))
+            ).collect(Collectors.toList());
+    
+        connect();
+        try (Session session = driver.session()) {
+            for (int i = 0; i < edgeList.size(); i += batchSize) {
+                List<Map<String, Object>> batch = edgeList.subList(i, Math.min(i + batchSize, edgeList.size()));
+                String query = "UNWIND $edges AS edge " +
+                               "MATCH (a {elementId: $label + edge.id}), (b {elementId: $label + edge.other_id}) " +
+                               "MERGE (a)-[r:RELATED]->(b) " +
+                               "ON CREATE SET r.weight = edge.weight " +
+                               "RETURN a, b, r";
+                session.run(query, Map.of("edges", batch, "label", label));
+            }
+        } finally {
+            disconnect();
+        }
     }
 
     public void clearAllEdges() {
@@ -122,6 +173,7 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    @Override
     public void reset() {
         connect();
         try (Session session = driver.session()) {
@@ -135,13 +187,9 @@ public class NeoDatabase implements IDatabase {
         disconnect();
     }
 
-    public static void main(String[] args) {
-        new NeoDatabase().createWeightedRelationships();
-    }
-
     @Override
     public void createAllEdges(List<PDFText> texts, double similarityTreshold) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createAllEdges'");
+        return;
     }
+
 }

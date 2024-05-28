@@ -3,7 +3,9 @@ package com.graphbook.backend.service.impl.initializer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -52,7 +54,13 @@ public class SimpleGraphBookInitializer implements IGraphBookInitializer {
             throw new RuntimeException("Failed to load existing properties from paths.properties file", e);
         }
 
-        properties.setProperty("PROJECT_PATH", chosenDir.toPath().toString());
+        System.out.println("Chosen directory: " + chosenDir.toString());
+        System.out.println("Directory path: " + chosenDir.toPath());
+        System.out.println("Chosen dir string path: " + chosenDir.toPath().toString());
+        String windowsSafePath = chosenDir.toPath().toString().replace("\\", "/");
+        windowsSafePath = windowsSafePath.replace('\\', '/');
+        properties.setProperty("PROJECT_PATH2", windowsSafePath);
+        System.out.println("Set Path: " + properties.getProperty("PROJECT_PATH"));
         
         try (FileOutputStream out = new FileOutputStream(pathsPropertiesFile)) {
             properties.store(out, null);
@@ -84,11 +92,15 @@ public class SimpleGraphBookInitializer implements IGraphBookInitializer {
             logger.error("Failed to load properties from .env file", e);
             throw new RuntimeException("Failed to load properties from .env file, check logged error for details");
         }
-
-        properties.setProperty("PROJECT_PATH", chosenDir.toPath().toString());
-        
-        try (FileOutputStream out = new FileOutputStream(dotenvFile)) {
-            properties.store(out, null);
+        System.out.println("Properties stored path: " + properties.getProperty("PROJECT_PATH"));
+        System.out.println("Normalized path: " + Paths.get(properties.getProperty("PROJECT_PATH")).normalize());
+        System.out.println("Unchanged hopefully property: " + properties.getProperty("PROJECT_PATH"));
+        for (char c : properties.getProperty("PROJECT_PATH").toCharArray()) {
+            System.out.println("Char: " + c + " ASCII: " + (int) c);
+        }
+        try (Writer writer = new FileWriter(dotenvFile)) {
+            System.out.println("Properties stored path: " + properties.getProperty("PROJECT_PATH"));
+            properties.store(writer, null);
         } catch (IOException e) {
             LogManager.getLogger(SimpleGraphBookInitializer.class).error("Failed to store properties to .env file", e.getMessage(), e);
             throw new RuntimeException("Failed to store properties to .env file, check error log for details");

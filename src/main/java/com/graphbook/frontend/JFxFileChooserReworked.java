@@ -19,16 +19,40 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class JFxFileChooserReworked implements IFileChooser {
+    private static Stage primaryStage;
 
-    private final Stage primaryStage;
+    static {
+        try {
+            initializeJavaFX();
+        } catch (Exception e) {
+            System.out.println("Failed to initialize JavaFX: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
-    public JFxFileChooserReworked(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+    private static void initializeJavaFX() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        try {
+            Platform.startup(() -> {
+                primaryStage = new Stage();
+                latch.countDown();
+            });
+
+            if (latch.getCount() > 0) {
+                latch.countDown();
+            }
+            latch.await();  // Wait for the JavaFX initialization to complete.
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            System.out.println("Error during JavaFX initialization: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -176,4 +200,7 @@ public class JFxFileChooserReworked implements IFileChooser {
         return (directory != null && directory.isDirectory());
     }
     
+    public void exit() {
+        Platform.exit();
+    }
 }

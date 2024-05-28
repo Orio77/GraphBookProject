@@ -11,4 +11,5 @@ public interface IFileChooser {
     File chooseTXT();
     File chooseTXT(File initialDirectory);
     String getUserInput(String title, String label);
+    void exit();
 }

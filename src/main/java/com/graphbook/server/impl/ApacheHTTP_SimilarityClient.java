@@ -1,6 +1,7 @@
 package com.graphbook.server.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,9 +19,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphbook.backend.model.PDFText;
+import com.graphbook.backend.model.Pair;
 import com.graphbook.backend.service.IAIResponseSimilarityScoreExtractor;
 import com.graphbook.server.IAISimilarityClient;
 import com.graphbook.util.CONSTANTS;
@@ -84,16 +87,16 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
     }
 
     @Override
-    public Object getSimilarityBatchResponse(List<PDFText> pdf, String label) {
+    public Map<Integer, List<Pair<Integer, Double>>> getSimilarityBatchResponse(List<PDFText> pdf, String label) {
         String response = sendPDF(pdf, label);
         if (response == null) {
             throw new RuntimeException("Received response from the Python Server was null. Check error log for details");
         }
         String jsonResponse = response;
         
-        Map<?, ?> responseMap = null;
+        HashMap<String, HashMap<Integer, List<Pair<Integer, Double>>>> responseMap = null;
         try {
-            responseMap = MAPPER.readValue(jsonResponse, Map.class);
+            responseMap = MAPPER.readValue(jsonResponse, new TypeReference<HashMap<String, HashMap<Integer, List<Pair<Integer, Double>>>>>() {});
         } catch (JsonMappingException e) {
             logger.error("JsonMappingException occured.", e.getMessage(), e);
             throw new RuntimeException("Mapping Json Failed");
@@ -102,7 +105,7 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             throw new RuntimeException("JsonProcessingException occured during mapping json");
         }
 
-        Object res = responseMap.get("similarity_batch");
+        HashMap<Integer, List<Pair<Integer, Double>>> res = responseMap.get("similarity_batch");
         return res;
     }
 
@@ -185,7 +188,7 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
 
     private String sendPDF(List<PDFText> pdf, String label) {
         RequestConfig requestConfig = RequestConfig.custom()
-            .setSocketTimeout(30000)  // socket timeout
+            // .setSocketTimeout(30000)  // socket timeout
             .setConnectTimeout(30000)  // connection timeout
             .build();
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {

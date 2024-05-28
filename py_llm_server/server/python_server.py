@@ -39,6 +39,7 @@ def calculate_similarity():
 
     return jsonify(response)
 
+# curl test: curl -X POST -H "Content-Type: application/json" -d '{"texts": ["text1", "text2", "text3"], "label": "some_label"}' http://192.168.1.46:5000/similarity_batch
 @app.route('/similarity_batch', methods=['POST'])
 def calculate_similarity_batch():
     data = request.json
@@ -50,7 +51,7 @@ def calculate_similarity_batch():
         return jsonify({"error": f"Missing key {e}"}), 400
     
     handler = HF_LLMHandler(Mistral())
-    scores = handler.get_similarity_Scores(texts=texts, label=label) # Map.of(Integer=page_number, int[]{Integer=other_page_number, Double=score})
+    scores = handler.get_similarity_Scores(texts=texts, label=label) # type used: results[int(i)].append({"el1": int(j),"el2": float(score)})
 
     response = {'similarity_batch': scores}
 

@@ -148,7 +148,15 @@ public class JDataManager implements IDataManager {
     @Override
     public List<PDFText> loadPDF(File savedPDF) {
         // TODO add a window informing the user what he is tasked with (frontend)
-        return (List<PDFText>) readSavedPDF(savedPDF); 
+        Object res = readSavedPDF(savedPDF); 
+        System.out.println("Deserialization class: " + res.getClass().getName());
+        List<PDFText> result = null;
+        try {
+            result = (List<PDFText>) res;
+        } catch (ClassCastException e) {
+            System.out.println("Wrong data type. Class Cast failed");
+        }
+        return result;
     }
 
     // TODO Improve Saver
