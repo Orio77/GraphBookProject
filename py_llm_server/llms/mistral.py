@@ -112,18 +112,87 @@ class Mistral(LLM):
 
         return results  
 
-    def continue_similarity_scores_calculation(self):
-        if not os.path.exists(self.texts_path) or not os.path.exists(self.label_path):
-            raise FileNotFoundError("Checkpoint files not found.")
+    def calculate_Concept_Scores(self, texts, concept, label):
+        # Serialize texts and label for checkpoint
+        with open(self.texts_path, 'w') as f:
+            json.dump(texts, f)
+        with open(self.label_path, 'w') as f:
+            json.dump(label, f)
+
+        # Load existing results if available
+        if os.path.exists(self.results_path):
+            with open(self.results_path, 'r') as f:
+                results = json.load(f)
+        else:
+            results = []
+            with open(self.results_path, 'w') as f:
+                json.dump(label, f)
+
+        length = len(texts)
+        start_index = len(results)  # Determine where to resume
+        self.output_dir = os.path.join(self.save_path, label)
+        # Ensure the output directory exists
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
         
-        with open(self.texts_path, 'rb') as f:
-            texts = json.load(f)
-        with open(self.label_path, 'rb') as f:
-            label = json.load(f)
+        for i in range(start_index, length):
+            # Get the Similarity Score from AI
+            response = ollama.chat(model='mistral', messages=[
+                {
+                'role': 'system',
+                'content': 'Given a text and a concept, return the score of how much the text is about the concept, as double in range (0.0-100.0). End your message with: "Score: SCORE"'
+            },
+            {
+                'role': 'system',
+                'content': 'Make sure to include "Score:" in your answer.'
+            },
+            {
+                'role': 'system',
+                'content': 'Make sure to respond with score as a double.'
+            },
+            {
+                'role': 'user',
+                'content': f"""
+                TEXT:
+                {texts[i]}
+                
+                TEXT2:
+                {concept}
 
-        # TODO What if there are no such files (throw an exception)
+                YOUR SCORE (0-100):
+                """
+            },
+            {
+                'role': 'assistant',
+                'content': 'Score: '
+            },
+            ],
+            options={'temperature': 0.7, 'num_predict': 5}, keep_alive=-1)
+            ai_response = response['message']['content']
+            # Extract score out of the response
+            score_match = re.match(r'^(\d+\.\d+)', ai_response)
+            if score_match:
+                score = float(score_match.group())
+            else:
+                score = -1
 
-        return self.calculate_similarity_batch(texts=texts, label=label)
+            results.append({'el1': int(i),'el2': float(score)})
+                    
+
+        # Save before moving the file
+        with open(self.results_path, 'w') as f:
+            json.dump(results, f)
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+
+        # Move the final file to the dedicated directory
+        shutil.move(self.results_path, os.path.join(self.output_dir, os.path.basename(self.results_path)))
+
+        os.remove(self.texts_path)
+        os.remove(self.label_path)
+
+        return results
 
     def print_saved_results(self):
         path = os.path.join("C:\\Users\\macie\\GraphBookDirTest\\scores", 'results.json')

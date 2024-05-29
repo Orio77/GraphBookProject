@@ -15,5 +15,6 @@ class HF_LLMHandler(ILLMHandler):
     def get_similarity_Scores(self, texts, label):
         return self.llm.calculate_similarity_batch(texts=texts, label=label)
     
-    # TODO add continuation of calculation
+    def get_Concept_Scores(self, texts, concept, label):
+        return self.llm.calculate_Concept_Scores(texts=texts, concept=concept, label=label)
     

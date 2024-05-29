@@ -55,39 +55,24 @@ def calculate_similarity_batch():
 
     return jsonify(response)
 
-# Transparent and Debug Version
-@app.route('/debug_similarity', methods =['POST'])
-def _debug_calculate_similarity():
-    print("_debug_calculate_similarity called")
+# TODO @app.route('continue_calculations', methods=['?'])
+# Curl test: curl -X POST -H "Content-Type: application/json" -d '{"texts": ["The cat sat on the mat.", "The quick brown fox jumps over the lazy dog.", "Hello, world!"], "concept": "animal", "label": "test_label"}' http://localhost:5000/concept
+@app.route('/concept', methods=['POST'])
+def calculate_Concept_Scores():
+    data = request.json
+
     try:
-        print("Trying to parse JSON data")
-        print("Raw data: ", request.data)  # Print raw data
-        data = request.json
-        print("JSON data parsed successfully")
-
-        print("Trying to extract text1 and text2 from data")
-        text1 = data['text1']
-        text2 = data['text2']
-        print("Extracted text1 and text2 successfully")
-    except KeyError as e:
-        print("Caught KeyError")
-        return jsonify({"error": f"Missing key: {e}"}), 400
+        texts = data['texts']
+        concept = data['concept']
+        label = data['label']
     except Exception as e:
-        print("caught an exception")
-        print("Exception traceback: " + traceback.format_exc())
-        return jsonify({"error": "An error occured while processing the request"}), 400
-
-    print("Creating handler and calculating similarity score")
-    handler = HF_LLMHandler(Phi())
-    score = handler.get_Similarity_Score(text1, text2)
-    print("Calculated similarity score successfully")
-
-    response = {'similarity': score}
-    print("Sent JSON: " + json.dumps(response))  # Print sent JSON
+        return jsonify({"error": f"Missing key {e}"}), 400
+    
+    handler = HF_LLMHandler(Mistral())
+    scores = handler.get_Concept_Scores(texts=texts, concept=concept, label=label)
+    response = {'concept': scores}
 
     return jsonify(response)
-
-# TODO @app.route('continue_calculations', methods=['?'])
 
 
 def closing_Message():
@@ -112,5 +97,4 @@ def test_similarity_scores_mistral():
 
 
 if __name__ == "__main__":
-    # app.run(debug=True, host='0.0.0.0', port=5000)
-    test_similarity_scores_mistral()
+    app.run(debug=True, host='0.0.0.0', port=5000)
