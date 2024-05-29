@@ -1,6 +1,7 @@
 package com.graphbook.backend.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * PDFText is a class representing a text element in a PDF
@@ -30,5 +31,18 @@ public class PDFText implements Serializable{
     @Override
     public String toString() {
         return text;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        PDFText pdfText = (PDFText) obj;
+        return Objects.equals(text, pdfText.text);
     }
 }

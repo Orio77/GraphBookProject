@@ -13,5 +13,6 @@ public interface IDataManager {
     List<PDFText> loadPDF(File savedPDF);
     Path createDir(Path path);
     Path createFile(String pathAsString, String fileName);
+    Object readSavedPDF(File file);
 
 }

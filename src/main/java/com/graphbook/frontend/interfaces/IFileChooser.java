@@ -10,6 +10,8 @@ public interface IFileChooser {
     File chooseDir(File initialDirectory);
     File chooseTXT();
     File chooseTXT(File initialDirectory);
+    File chooseJSON();
+    File chooseJSON(File initialDirectory);
     String getUserInput(String title, String label);
     void exit();
 }

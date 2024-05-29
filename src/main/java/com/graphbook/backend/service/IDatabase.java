@@ -11,7 +11,6 @@ public interface IDatabase {
     void connect();
     void save(List<PDFText> texts, String label);
     void disconnect();
-    void createAllEdges(List<PDFText> texts, double similarityTreshold);
     void createEdges(Map<Integer, List<Pair<Integer, Double>>> result, String label);
     void reset();
 }

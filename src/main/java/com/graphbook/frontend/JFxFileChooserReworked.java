@@ -87,6 +87,16 @@ public class JFxFileChooserReworked implements IFileChooser {
     }
 
     @Override
+    public File chooseJSON(File initialDirectory) {
+        return chooseFile(new FileChooser.ExtensionFilter("Json Files", "*.json"), initialDirectory);
+    }
+
+    @Override
+    public File chooseJSON() {
+        return chooseFile(new FileChooser.ExtensionFilter("Json Files", "*.json"), null);
+    }
+
+    @Override
     public String getUserInput(String title, String label) {
        AtomicReference<String> result = new AtomicReference<>();
        CountDownLatch latch = new CountDownLatch(1);

@@ -10,7 +10,9 @@ public class Main {
 
     public static void main(String[] args) {
         LocalDateTime start = TimeMeasurer.startMeasuring();
-        manager.createGraph();
+        // manager.createEdgesScoresCalculated();
+        // manager.createGraph();
+        manager.initializeProject();
         LocalDateTime end = TimeMeasurer.endMeasuring();
         System.out.println(TimeMeasurer.getTimePassedString(start, end));
         manager.exitGUI();

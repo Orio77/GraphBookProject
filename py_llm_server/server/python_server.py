@@ -3,8 +3,6 @@ import sys
 import re
 import traceback
 import atexit
-from dotenv import load_dotenv
-load_dotenv("C:/Users/macie/Desktop/GBP/graph-book-core/py_llm_server/environment/.env")
 
 from flask import Flask
 from flask import request
@@ -114,4 +112,5 @@ def test_similarity_scores_mistral():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # app.run(debug=True, host='0.0.0.0', port=5000)
+    test_similarity_scores_mistral()

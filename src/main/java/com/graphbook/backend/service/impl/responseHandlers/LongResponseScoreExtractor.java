@@ -9,6 +9,9 @@ public class LongResponseScoreExtractor implements IAIResponseSimilarityScoreExt
     
     @Override
     public double extract(String response) {
+        if (response == null || response.isEmpty()) {
+            throw new RuntimeException("Response cannot be null or empty");
+        }
         Pattern pattern = Pattern.compile("Score: ([0-9]*\\.?[0-9]+)");
         Matcher matcher = pattern.matcher(response);
         if (matcher.find()) {

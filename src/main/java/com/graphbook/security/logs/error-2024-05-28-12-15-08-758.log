@@ -1,0 +1,1 @@
+2024-05-28 17:20:21 ERROR PDFBoxHandler:66 - java.io.IOException: COSStream has been closed and cannot be read. Perhaps its enclosing PDDocument has been closed?

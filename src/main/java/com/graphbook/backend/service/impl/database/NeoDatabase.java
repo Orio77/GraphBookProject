@@ -37,6 +37,12 @@ public class NeoDatabase implements IDatabase {
 
     @Override
     public void save(List<PDFText> texts, String label) {
+        if (texts == null || texts.isEmpty()) {
+            throw new IllegalArgumentException("Texts cannot be null");
+        }
+        if (label == null || label.isEmpty()) {
+            throw new IllegalArgumentException("Label cannot be null or empty");
+        }
         connect();
         try (Session session = driver.session()) {
             // Ensure label is safely escaped
@@ -62,13 +68,10 @@ public class NeoDatabase implements IDatabase {
             if (!query.isEmpty()) {
                 session.run(query, parameters);
             }
-        } catch (Neo4jException e) {
-            System.out.println();
-            System.out.println("Neo4j operation failed: " + e.getMessage());
-            System.out.println();
-            throw e;
+        } 
+        finally {
+            disconnect();
         }
-        disconnect();
     }
 
     @Override
@@ -79,33 +82,18 @@ public class NeoDatabase implements IDatabase {
     }
 
     public void createEdge(PDFText text1, PDFText text2, double similarityScore, int pageNum) {
+        if (text1 == null) {
+            throw new IllegalArgumentException("text1 cannot be null");
+        }
+        if (text2 == null) {
+            throw new IllegalArgumentException("text2 cannot be null");
+        }
         try (Session session = driver.session()) {
             String content1 = text1.getText();
             String content2 = text2.getText();
 
             session.run("MATCH (a:Page {text: $textA}), (b:Page {text: $textB})" + "MERGE (a)-[r:RELATED {value: $value}]->(b)" + "MERGE (a)-[s:" + "P" + pageNum + " {value: $value}]->(b)", Values.parameters("textA", content1, "textB", content2, "value", similarityScore));
         } 
-        catch (Neo4jException e) {
-            System.out.println();
-            System.out.println("Neo4j operation failed: " + e.getMessage());
-            System.out.println();
-            throw e;
-        }
-    }
-
-    public void createWeightedRelationships() {
-        connect();
-        try (Session session = driver.session()) {
-            String query = 
-                "MATCH (a:Page), (b:Page) " +
-                "WHERE id(a) < id(b) " +
-                "MERGE (a)-[r:CONNECTED]->(b) " +
-                "ON CREATE SET r.weight = rand() " +
-                "RETURN a, b, r";
-
-            session.run(query);
-        }
-        disconnect();
     }
 
     // HashMap = {id, {other_id, weight(double)}}
@@ -132,6 +120,12 @@ public class NeoDatabase implements IDatabase {
     }
 
     public void createEdges(Map<Integer, List<Pair<Integer, Double>>> result, String label) {
+        if (label == null || label.isEmpty()) {
+            throw new IllegalArgumentException("Label cannot be null or empty");
+        }
+        if (result == null || result.isEmpty()) {
+            throw new IllegalArgumentException("Result cannot be null or empty");
+        }
         int batchSize = 1000; // Adjust based on your system's capabilities
         List<Map<String, Object>> edgeList = result.entrySet().stream()
             .flatMap(entry -> entry.getValue().stream()
@@ -178,18 +172,9 @@ public class NeoDatabase implements IDatabase {
         connect();
         try (Session session = driver.session()) {
             session.run("MATCH (n) DETACH DELETE n");
-        } catch (Neo4jException e) {
-            System.out.println();
-            System.out.println("Neo4j operation failed: " + e.getMessage());
-            System.out.println();
-            throw e;
+        } 
+        finally {
+            disconnect();
         }
-        disconnect();
     }
-
-    @Override
-    public void createAllEdges(List<PDFText> texts, double similarityTreshold) {
-        return;
-    }
-
 }

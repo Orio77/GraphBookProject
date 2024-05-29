@@ -1,6 +1,7 @@
 package com.graphbook.server.impl;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphbook.backend.model.PDFText;
 import com.graphbook.backend.model.Pair;
 import com.graphbook.backend.service.IAIResponseSimilarityScoreExtractor;
+import com.graphbook.backend.service.impl.dataManagers.GraphBookConfigManager;
 import com.graphbook.server.IAISimilarityClient;
-import com.graphbook.util.CONSTANTS;
 
 /**
  * ApacheHTTP_SimilarityClient is a class that communicates with a local AI service via HTTP requests.
@@ -131,7 +132,19 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             .build();
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             // Create a new HttpPost with the AI service URI
-            HttpPost post = new HttpPost(CONSTANTS.MY_URI);
+            URI myURI = null;
+            try {
+                myURI = URI.create(GraphBookConfigManager.getProperty("URIs", "SimilarityBatchUri"));
+            } 
+            catch (NullPointerException e) {
+                logger.error(e);
+                throw new RuntimeException("URI creation failed. Provided String was null", e);
+            }
+            catch (IllegalArgumentException e) {
+                logger.error(e);
+                throw new RuntimeException("URI creation failed. Provided String probably violated RFC 2396", e);
+            }
+            HttpPost post = new HttpPost(myURI);
 
             // Convert the texts to JSON
             String json = MAPPER.writeValueAsString(Map.of("text1", text1, "text2", text2));
@@ -195,7 +208,7 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             // Create a new HttpPost with the AI service URI
             HttpPost post = null;
             try {
-                post = new HttpPost(CONSTANTS.MY_URI_BATCH);
+                post = new HttpPost(getURI());
             } catch (ExceptionInInitializerError e) {
                 System.out.println(e.getLocalizedMessage());
                 System.out.println(e.getMessage());
@@ -254,5 +267,24 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
             logger.error("IO exception occured. Exception: {}", e.getMessage(), e);
             return null;
         }
+    }
+
+    private URI getURI() {
+        URI myURI = null;
+        try {
+            myURI = URI.create(GraphBookConfigManager.getProperty("URIs", "SimilarityBatchUri"));
+        } 
+        catch (NullPointerException e) {
+            logger.error(e);
+            throw new RuntimeException("URI creation failed. Provided String was null", e);
+        }
+        catch (IllegalArgumentException e) {
+            logger.error(e);
+            throw new RuntimeException("URI creation failed. Provided String probably violated RFC 2396", e);
+        }
+        if (myURI != null) {
+            return myURI;
+        }
+        else throw new RuntimeException("Created URI is null");
     }
 }

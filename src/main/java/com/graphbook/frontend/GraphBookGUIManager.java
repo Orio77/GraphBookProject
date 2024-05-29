@@ -2,30 +2,31 @@ package com.graphbook.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphbook.backend.model.PDFText;
 import com.graphbook.backend.model.Pair;
 import com.graphbook.backend.service.IDataManager;
 import com.graphbook.backend.service.IDatabase;
-import com.graphbook.backend.service.IGraphBookInitializer;
 import com.graphbook.backend.service.IPdfHandler;
+import com.graphbook.backend.service.impl.dataManagers.GraphBookConfigManager;
 import com.graphbook.backend.service.impl.dataManagers.JDataManager;
 import com.graphbook.backend.service.impl.dataManagers.PDFBoxHandler;
 import com.graphbook.backend.service.impl.database.NeoDatabase;
-import com.graphbook.backend.service.impl.initializer.SimpleGraphBookInitializer;
+import com.graphbook.backend.service.impl.initializer.SafeGraphBookInitializer;
 import com.graphbook.frontend.interfaces.IFileChooser;
 import com.graphbook.server.ISimilarityClient;
 import com.graphbook.server.impl.ApacheHTTP_SimilarityClient;
-import com.graphbook.util.CONSTANTS;
 
 public class GraphBookGUIManager {
     private final IFileChooser fileChooser;
     private final IPdfHandler pdfHandler;
     private final IDatabase database;
     private final IDataManager dataManager;
-    private final IGraphBookInitializer initializer;
     private final ISimilarityClient client;
 
     // default
@@ -34,7 +35,6 @@ public class GraphBookGUIManager {
         pdfHandler = new PDFBoxHandler();
         database = new NeoDatabase();
         dataManager = new JDataManager();
-        initializer = new SimpleGraphBookInitializer();
         client = new ApacheHTTP_SimilarityClient(null);
     }
 
@@ -52,14 +52,28 @@ public class GraphBookGUIManager {
 
 
     public Pair<List<PDFText>, String> loadSavedPDF() {
-        File savedDir = CONSTANTS.SAVED_PDFS_PATH.toFile();
+        File savedDir = GraphBookConfigManager.getSavedPdfsPath().toFile();
         if (savedDir.list().length == 0) {
             // Information that no pdfs are saved, please choose a pdf you'd like to save and work with
             return readPDF();
         }
-        File savedPDF = fileChooser.chooseTXT(CONSTANTS.SAVED_PDFS_PATH.toFile());
+        File savedPDF = fileChooser.chooseTXT(savedDir);
         String label = savedPDF.getName().substring(0, savedPDF.getName().indexOf('.'));
         return new Pair<>(dataManager.loadPDF(savedPDF), label);
+    }
+
+    public Pair<File, String> loadSavedScores() {
+        
+
+        File savedDir = GraphBookConfigManager.getSavedPdfsPath().toFile();
+        if (savedDir.list().length == 0) {
+            // Information that no pdfs are saved, please choose a pdf you'd like to save and work with
+            throw new RuntimeException("No saved scores");
+        }
+        File savedScores = fileChooser.chooseJSON(savedDir);
+        String label = savedScores.getParentFile().getName();
+        System.out.println(label); // TODO DELETE
+        return new Pair<>(savedScores, label);
     }
 
     // TODO Start Process of Edge Creation
@@ -74,10 +88,6 @@ public class GraphBookGUIManager {
         if (res == null) {
             throw new RuntimeException("Response is null");
         }
-        System.out.println(res.getClass().getName());
-        System.out.println(res.getClass());
-        System.out.println(res.getClass().getCanonicalName());
-        System.out.println(res.getClass().getTypeName());
         
         // HashMap<Integer, List<List<Double>>> castedRes = responseHandler.handle(res);
         // HashMap<Integer, List<List<Double>>> filteredRes = new HashMap<>();
@@ -133,27 +143,48 @@ public class GraphBookGUIManager {
         return null;
     }
 
+    public void createEdgesScoresCalculated() {
 
+        Pair<File, String> savedScores = loadSavedScores();
 
-    public void setProjectPath() {
-        File projectDir = fileChooser.chooseDir();
-        initializer.setProjectPath(projectDir);
+        try {
+            Map<Integer, List<Pair<Integer, Double>>> scores = new ObjectMapper().readValue(savedScores.getEl1(), new TypeReference<Map<Integer, List<Pair<Integer, Double>>>>(){});
+            
+            scores.entrySet().stream().forEach(entry -> {
+                System.out.println("key: " + entry.getKey());
+                System.out.println("val: " + entry.getValue());
+            });
+
+            createEdges(scores, savedScores.getEl2());
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading scores");
+        }   
     }
-
-    public void createNecessaryDirectories() {
-        initializer.createNecessaryDirectories();
-    }
-
 
     public void initializeProject() {
-        setProjectPath();
-        createNecessaryDirectories();
+        File projectDir = fileChooser.chooseDir();
+        new SafeGraphBookInitializer(projectDir);
     }
 
 
     public void runPythonServer() {
-        ProcessBuilder processBuilder = new ProcessBuilder(CONSTANTS.PYTHON_EXECUTABLE.toString(), CONSTANTS.PYTHON_SERVER_FILENAME); // TODO Handle null paths
-        processBuilder.directory(CONSTANTS.PYTHON_SERVER_DIR.toFile());
+        String pythonExecutableName = GraphBookConfigManager.getProperty("Python", "PythonExecutable");
+        String pythonServerDir = GraphBookConfigManager.getProperty("Python", "PythonServerPath");
+        String pythonFileName = GraphBookConfigManager.getProperty("Python", "PythonServerFileName");
+
+        if (pythonExecutableName == null || pythonExecutableName.isEmpty()) {
+            throw new RuntimeException("Retrieved Executable Name was null or empty");
+        }
+        if (pythonServerDir == null || pythonServerDir.isEmpty()) {
+            throw new RuntimeException("Retrieved Python Server Directory was null or empty");
+        }
+        if (pythonFileName == null || pythonFileName.isEmpty()) {
+            throw new RuntimeException("Retrieved Python File Name was null or empty");
+        }
+
+
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutableName, pythonFileName); // TODO Handle null paths
+        processBuilder.directory(Paths.get(pythonServerDir).toFile());
     
         // Redirect the process's output to the Java program's output
         processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
