@@ -1,0 +1,2 @@
+2024-06-04 12:32:09 WARN  GraphBookConfigManager:81 - Property URIs.ConceptURI not found
+2024-06-04 12:32:09 ERROR ApacheHTTP_SimilarityClient:175 - java.lang.NullPointerException: Cannot invoke "String.length()" because "this.input" is null

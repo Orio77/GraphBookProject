@@ -1,6 +1,8 @@
 package com.graphbook.backend.model;
 
-public class Pair <T1, T2> {
+import java.io.Serializable;
+
+public class Pair <T1, T2> implements Serializable {
     private T1 el1;
     private T2 el2;
 
@@ -22,5 +24,10 @@ public class Pair <T1, T2> {
     }
     public void setEl2(T2 el2) {
         this.el2 = el2;
+    }
+
+    @Override
+    public String toString() {
+        return "\nElement1: " + el1 + "\nElement2: " + el2;
     }
 }

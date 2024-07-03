@@ -14,15 +14,16 @@ import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.graphbook.backend.service.impl.initializer.SafeGraphBookInitializer;
 
 public class GraphBookConfigManager {
-    private static ObjectNode rootNode;
-    private static final Logger logger = LogManager.getLogger();
+    private ObjectNode rootNode;
+    private final Logger logger = LogManager.getLogger();
     private ObjectMapper mapper;
     private Path configFilePath;
 
     public GraphBookConfigManager(Path configFilePath) {
-        this.mapper = new ObjectMapper();
+        mapper = new ObjectMapper();
         this.configFilePath = configFilePath;
         initialize();
         addInitialProperties();
@@ -30,23 +31,23 @@ public class GraphBookConfigManager {
     }
 
     public GraphBookConfigManager() {
-        this.mapper = new ObjectMapper();
-        this.configFilePath = readConfigFilePath();
+        mapper = new ObjectMapper();
         initialize();
+        configFilePath = readConfigFilePath();
     }
 
     private Path readConfigFilePath() {
         String pathAsString = getProperty("GraphBookProject", "ConfigFilePath");
         if (pathAsString == null) {
             logger.warn("Config path is not set yet, run the other constructor first.");
-            return null;
+            throw new RuntimeException("Config path is not set yet, run the other constructor first.");
         }
         return Paths.get(pathAsString);
     }
 
     private void initialize() {
         try {
-            File configFile = configFilePath.toFile();
+            File configFile = SafeGraphBookInitializer.getConfigFilePath().toFile();
             if (configFile.length() < 2) {
                 rootNode = mapper.createObjectNode();
             } else {
@@ -66,13 +67,15 @@ public class GraphBookConfigManager {
 
     private void addInitialProperties() {
         addProperty("URIs", "SimilarityBatchUri", "http://192.168.1.46:5000/similarity_batch");
+        addProperty("URIs", "PlotURI", "http://192.168.1.46:5001/generatePlot");
+        addProperty("URIs", "ConceptURI", "http://192.168.1.46:5000/concept");
         addProperty("Python", "PythonEnvPath", "C:/Users/macie/anaconda3/envs/GraphBookProjectPyEnv/python.exe");
         addProperty("Python", "PythonExecutable", "python.exe");
         addProperty("Python", "PythonServerPath", "C:/Users/macie/Desktop/GBP/graph-book-core/py_llm_server/server");
         addProperty("Python", "PythonServerFileName", "python_server.py");
     }
 
-    public static String getProperty(String parentKey, String childKey) {
+    public String getProperty(String parentKey, String childKey) {
         if (rootNode.has(parentKey) && rootNode.get(parentKey).has(childKey)) {
             return rootNode.get(parentKey).get(childKey).asText();
         } else {
@@ -118,15 +121,17 @@ public class GraphBookConfigManager {
         }
     }
 
-    public static Path getSavedPdfsPath() {
-        String res = getProperty("GraphBookProject", "Saved");
+    public Path getSavedPdfsPath() {
+        initialize();
+        String res = getProperty("GraphBookProject", "SavedPDFs");
         if (res == null) {
             throw new RuntimeException("There is no saved pdfs path property just yet");
         }
         else return Paths.get(res);
     }
 
-    public static Path getResultsPath() {
+    public Path getResultsPath() {
+        initialize();
         String res = getProperty("GraphBookProject", "Scores");
         if (res == null) {
             throw new RuntimeException("There is no scores path property just yet");

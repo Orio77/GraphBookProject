@@ -33,14 +33,41 @@ public class JDataManager implements IDataManager {
             throw new IllegalArgumentException("pdfName cannot be null or empty");
         }
         long startTime = System.nanoTime();
-        Path curPath = GraphBookConfigManager.getSavedPdfsPath().resolve(pdfName);
+        Path curPath = new GraphBookConfigManager().getSavedPdfsPath().resolve(pdfName);
         File freshlySavedPDF = curPath.toFile();
-        if (!freshlySavedPDF.exists() || !freshlySavedPDF.mkdir()) {
-            throw new RuntimeException("Failed to create the directory");
+        if (!freshlySavedPDF.exists() && !freshlySavedPDF.mkdir()) {
+            throw new RuntimeException("Failed to create the directory.");
         }
         boolean res = writeObject(o, curPath, pdfName);
         if (!res) {
-            return false;
+            throw new RuntimeException("Failed to save (serialize) the pdf into file");
+        }
+        long endTime = System.nanoTime();
+        double secondsTaken = (double) (endTime - startTime) / 1000000000;
+        createMetadata(curPath, o, secondsTaken);
+        return true;
+    }
+
+    @Override
+    public boolean savePlot(Object o, String label) {
+        if (o == null) {
+            throw new IllegalArgumentException("Object to save cannot be null");
+        }
+        if (label == null || label.isEmpty()) {
+            throw new IllegalArgumentException("pdfName cannot be null or empty");
+        }
+        String pathAsString = new GraphBookConfigManager().getProperty("GraphBookProject", "SavedPlotData");
+        Path savedPlotsPath = Paths.get(pathAsString);
+
+        long startTime = System.nanoTime();
+        Path curPath = savedPlotsPath.resolve(label);
+        File freshlySavedPDF = curPath.toFile();
+        if (!freshlySavedPDF.exists() && !freshlySavedPDF.mkdirs()) {
+            throw new RuntimeException("Failed to create the directory.");
+        }
+        boolean res = writeObject(o, curPath, label);
+        if (!res) {
+            throw new RuntimeException("Failed to save (serialize) the plot into file");
         }
         long endTime = System.nanoTime();
         double secondsTaken = (double) (endTime - startTime) / 1000000000;
@@ -151,6 +178,10 @@ public class JDataManager implements IDataManager {
 
     @Override
     public Object readSavedPDF(File file) {
+        return readSavedObject(file);
+    }
+
+    private Object readSavedObject(File file) {
         if (file == null) {
             throw new IllegalArgumentException("File cannot be null");
         }
@@ -166,8 +197,13 @@ public class JDataManager implements IDataManager {
         } 
     }
 
+    @Override
+    public Object readSavedPlot(File file) {
+        return readSavedObject(file); 
+    }
+
     public boolean deleteAllSavedPDFs() {
-        Path dirPath = GraphBookConfigManager.getSavedPdfsPath();
+        Path dirPath = new GraphBookConfigManager().getSavedPdfsPath();
     
         try {
             Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {

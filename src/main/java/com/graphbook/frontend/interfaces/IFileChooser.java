@@ -1,6 +1,7 @@
 package com.graphbook.frontend.interfaces;
 
 import java.io.File;
+import java.util.List;
 
 public interface IFileChooser {
     
@@ -12,6 +13,7 @@ public interface IFileChooser {
     File chooseTXT(File initialDirectory);
     File chooseJSON();
     File chooseJSON(File initialDirectory);
-    String getUserInput(String title, String label);
+    List<String> chooseConcepts(List<String> allConcepts);
+    String getUserInput(String title, String information);
     void exit();
 }

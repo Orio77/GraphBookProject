@@ -1,5 +1,6 @@
 package com.graphbook.backend.service.impl.database;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,11 @@ import java.util.stream.Collectors;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
 import org.neo4j.driver.exceptions.Neo4jException;
+import org.neo4j.driver.Record;
 
 import com.graphbook.backend.model.PDFText;
 import com.graphbook.backend.model.Pair;
@@ -97,28 +100,6 @@ public class NeoDatabase implements IDatabase {
     }
 
     // HashMap = {id, {other_id, weight(double)}}
-    public void createEdgess(HashMap<Integer, List<Pair<Integer, Double>>> result, String label) {
-        connect();
-        try (Session session = driver.session()) {
-            for (Map.Entry<Integer, List<Pair<Integer, Double>>> entry : result.entrySet()) {
-                int id = entry.getKey();
-                List<Pair<Integer, Double>> edges = entry.getValue();
-                for (Pair<Integer, Double> edge : edges) {
-                    int other_id = edge.getEl1();
-                    double weight = edge.getEl2();
-                    String query = "MATCH (a:" + label + "{id: " + id + "}), (b:" + label + "{id: " + other_id + "}) " + 
-                                    "MERGE (a)-[r:RELATED]->(b) " +
-                                    "ON CREATE SET r.weight = " + weight + " " + 
-                                    "RETURN a, b, r";
-                    session.run(query);
-                }
-            }
-        } 
-        finally {
-            disconnect();
-        }
-    }
-
     public void createEdges(Map<Integer, List<Pair<Integer, Double>>> result, String label) {
         if (label == null || label.isEmpty()) {
             throw new IllegalArgumentException("Label cannot be null or empty");
@@ -152,6 +133,28 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    public void createEdges(String concept, List<Pair<Integer, Double>> conceptScores, String label) {
+        connect();
+        try (Session session = driver.session()) {
+    
+            String query = "CREATE (n:Concept {text: $concept, elementId: $concept}) " +
+                           "WITH n " +
+                           "UNWIND $scores as score " +
+                           "MATCH (b:Page {elementId: score.pageElementId}) " +
+                           "MERGE (a:Concept {elementId: $concept}) " +
+                           "CREATE (a)-[r:EDGE {weight: score.score}]->(b)";
+    
+            List<Map<String, Object>> scores = conceptScores.stream().map(pair -> {
+                String pageElementId = label + pair.getEl1();
+                return Map.<String, Object>of("pageElementId", pageElementId, "score", pair.getEl2());
+            }).collect(Collectors.toList());
+    
+            session.run(query, Map.of("concept", concept, "scores", scores));
+        } finally {
+            disconnect();
+        }
+    }    
+
     public void clearAllEdges() {
         connect();
         try (Session session = driver.session()) {
@@ -165,6 +168,58 @@ public class NeoDatabase implements IDatabase {
         finally {
             disconnect();
         }
+    }
+
+    public List<String> getConceptList() {
+        List<String> conceptList = null;
+        try (Session session = driver.session()) {
+            String cypherQuery = "MATCH (n:Concept) RETURN n.text AS text";
+            conceptList = session.run(cypherQuery)
+                                        .list(record -> record.get("text").asString());
+
+            System.out.println(conceptList);
+        }
+        catch (Neo4jException e) {
+            System.out.println();
+            System.out.println("Neo4j operation failed: " + e.getMessage());
+            System.out.println();
+            throw e;
+        }
+        
+        return conceptList;
+    }
+
+    public Map<String, List<Pair<String, Double>>> getConceptNodes(List<String> chosenConcepts) {
+        Map<String, List<Pair<String, Double>>> conceptEdges = new HashMap<>();
+        try (Session session = driver.session()) {
+            for (String concept : chosenConcepts) {
+                List<Pair<String, Double>> edges = new ArrayList<>();
+                String query = "MATCH (c:Concept {text: $conceptName})-[r]->(n) RETURN n.elementId AS elementId, r.weight AS weight";
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("conceptName", concept);
+                Result result = session.run(query, parameters);
+
+                System.out.println(result.keys());
+                System.out.println(result.hasNext());
+
+                // Log the query and parameters
+                System.out.println("Executing query for concept: " + concept);
+                System.out.println("Query: " + query);
+                System.out.println("Parameters: " + parameters);
+
+                while (result.hasNext()) {
+                    Record record = result.next();
+                    String elementId = record.get("elementId").asString();
+                    Double weight = record.get("weight").asDouble();
+                    edges.add(new Pair<>(elementId, weight));
+                }
+                conceptEdges.put(concept, edges);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle exception (e.g., logging, rethrowing, etc.)
+        }
+        return conceptEdges;
     }
 
     @Override

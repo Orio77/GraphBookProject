@@ -1,0 +1,36 @@
+.button {
+    -fx-background-color: #4CAF50; /* JavaFX background color */
+    background-color: #4CAF50; /* Standard CSS background color, for compatibility */
+    -fx-text-fill: rgb(212, 117, 117); /* JavaFX text color */
+    color: rgb(212, 117, 117); /* Standard CSS text color */
+    -fx-font-size: 20px; /* JavaFX font size */
+    font-size: 20px; /* Standard CSS font size */
+    -fx-padding: 10px 20px; /* JavaFX padding */
+    padding: 10px 20px; /* Standard CSS padding */
+    -fx-background-radius: 5px; /* JavaFX rounded corners */
+    border-radius: 5px; /* Standard CSS rounded corners */
+}
+
+.button:hover {
+    -fx-background-color: #45a049; /* JavaFX darker green on hover */
+    background-color: #45a049; /* Standard CSS darker green on hover */
+}
+
+.menu-bar {
+    -fx-background-color: #333; /* JavaFX dark background */
+    background-color: #333; /* Standard CSS dark background */
+    -fx-text-fill: rgb(104, 36, 36); /* JavaFX text color */
+    color: rgb(104, 36, 36); /* Standard CSS text color */
+}
+
+.menu {
+    -fx-text-fill: rgb(122, 60, 60); /* JavaFX text color */
+    color: rgb(122, 60, 60); /* Standard CSS text color */
+}
+
+.root {
+    -fx-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* JavaFX font family */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Standard CSS font family */
+    -fx-font-size: 30px; /* JavaFX font size */
+    font-size: 30px; /* Standard CSS font size */
+}

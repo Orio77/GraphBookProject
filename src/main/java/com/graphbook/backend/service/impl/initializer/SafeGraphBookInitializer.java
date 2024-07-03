@@ -2,6 +2,7 @@ package com.graphbook.backend.service.impl.initializer;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -34,11 +35,11 @@ public class SafeGraphBookInitializer implements IGraphBookInitializer {
         
         configManager.addProperty("GraphBookProject", "ProjectPath", pathToChosenDir.toString());
         configManager.addProperty("GraphBookProject", "ConfigFilePath", configPath.toString());
-        configManager.addProperty("GraphBookProject", "Saved", savedPath.toString());
+        configManager.addProperty("GraphBookProject", "SavedPDFs", savedPath.toString());
         configManager.addProperty("GraphBookProject", "Scores", scoresPath.toString());
     }
 
-    public Path getConfigFilePath(String fileName) {
+    private Path getConfigFilePath(String fileName) {
         try {
             Path classFileDir = Paths.get(Objects.requireNonNull(getClass().getProtectionDomain().getCodeSource().getLocation().toURI())).getParent();
             Path projectRoot = classFileDir;
@@ -57,13 +58,31 @@ public class SafeGraphBookInitializer implements IGraphBookInitializer {
 
     @Override
     public void createNecessaryDirectories() {
-        Path projectDirPath = Paths.get(GraphBookConfigManager.getProperty("GraphBookProject", "ProjectPath"));
-        Path savedPdfsDirPath = Paths.get(GraphBookConfigManager.getProperty("GraphBookProject", "Saved"));
+        Path projectDirPath = Paths.get(new GraphBookConfigManager().getProperty("GraphBookProject", "ProjectPath"));
+        Path savedPdfsDirPath = Paths.get(new GraphBookConfigManager().getProperty("GraphBookProject", "SavedPDFs"));
         File savedPdfsDirectory = projectDirPath.resolve(savedPdfsDirPath).toFile();
         if (!savedPdfsDirectory.exists()) {
             if (!savedPdfsDirectory.mkdir()) {
                 throw new RuntimeException("Failed to create necessary directories (savedPdfsDirectory)");
             }
+        }
+    }
+
+    public static Path getConfigFilePath() {
+        try {
+            URL url = Thread.currentThread().getContextClassLoader().getResource("");
+            Path classFileDir = Paths.get(Objects.requireNonNull(url.toURI())).getParent();
+            Path projectRoot = classFileDir;
+            while (projectRoot != null && !projectRoot.endsWith(Paths.get("graph-book-core"))) {
+                projectRoot = projectRoot.getParent();
+            }
+            if (projectRoot == null) {
+                throw new RuntimeException("Failed to locate the Project Root. File must be outside of the project.");
+            }
+            return projectRoot.resolve(Paths.get("src/main/resources")).resolve("config.json");
+        } catch (URISyntaxException e) {
+            LogManager.getLogger("SafeGraphBookInitializer").error("Failed to locate the project root. Check error log for details.");
+            throw new RuntimeException("Failed to locate the project root. Check error log for details.", e);
         }
     }
 }

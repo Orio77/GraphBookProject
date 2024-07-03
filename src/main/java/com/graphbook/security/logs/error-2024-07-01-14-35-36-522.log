@@ -1,0 +1,2 @@
+2024-07-01 14:35:36 WARN  GraphBookConfigManager:81 - Property URIs.GraphURI not found
+2024-07-01 14:35:36 ERROR PropertiesHandler:19 - java.lang.NullPointerException: Cannot invoke "String.length()" because "this.input" is null

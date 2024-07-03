@@ -1,2 +1,0 @@
-2024-05-20 09:33:56 INFO  ApacheHTTP_SimilarityClient:123 - POST request executed successfully, received response
-2024-05-20 09:33:56 INFO  ApacheHTTP_SimilarityClient:138 - Entity content: ResponseEntityProxy{[Content-Type: application/json,Content-Length: 33,Chunked: false]}

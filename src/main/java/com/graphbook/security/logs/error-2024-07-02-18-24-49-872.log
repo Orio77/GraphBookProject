@@ -1,0 +1,1 @@
+2024-07-02 18:36:31 ERROR JDataManager:174 - java.io.NotSerializableException: com.graphbook.backend.model.Pair
