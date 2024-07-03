@@ -76,10 +76,10 @@ public class Main {
             loadPDFButton.setOnAction(event -> new Thread(() -> manager.loadSavedPDF()).start());
 
             Button createGraphButton = createButton("Create Graph", "/icons/create_graph_icon.png", iconSize); // size increased
-            createGraphButton.setOnAction(event -> new Thread(() -> manager.addConcept()).start());
+            createGraphButton.setOnAction(event -> new Thread(() -> manager.createGraph()).start());
 
             Button addConceptButton = createButton("Add Concept", "/icons/concept_icon.png", iconSize); // size increased
-            addConceptButton.setOnAction(event -> new Thread(() -> manager.addConcept()).start());
+            addConceptButton.setOnAction(event -> new Thread(() -> manager.addConceptToAll()).start());
 
             Button createChartButton = createButton("Create Chart", "/icons/create_chart_icon.png", iconSize); // size increased
             createChartButton.setOnAction(event -> new Thread(() -> manager.createChart()).start());

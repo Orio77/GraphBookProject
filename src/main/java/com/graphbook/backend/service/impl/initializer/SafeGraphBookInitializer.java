@@ -44,7 +44,7 @@ public class SafeGraphBookInitializer implements IGraphBookInitializer {
         this.configManager = new GraphBookConfigManager(configPath);
 
         Path pathToChosenDir = chosenDir.toPath();
-        Path savedPath = pathToChosenDir.resolve("saved");
+        Path savedPath = pathToChosenDir.resolve("saved\\pdfs");
         Path scoresPath = pathToChosenDir.resolve("scores");
         
         configManager.addProperty("GraphBookProject", "ProjectPath", pathToChosenDir.toString());
@@ -85,7 +85,7 @@ public class SafeGraphBookInitializer implements IGraphBookInitializer {
         Path savedPdfsDirPath = Paths.get(new GraphBookConfigManager().getProperty("GraphBookProject", "SavedPDFs"));
         File savedPdfsDirectory = projectDirPath.resolve(savedPdfsDirPath).toFile();
         if (!savedPdfsDirectory.exists()) {
-            if (!savedPdfsDirectory.mkdir()) {
+            if (!savedPdfsDirectory.mkdirs()) {
                 throw new RuntimeException("Failed to create necessary directories (savedPdfsDirectory)");
             }
         }

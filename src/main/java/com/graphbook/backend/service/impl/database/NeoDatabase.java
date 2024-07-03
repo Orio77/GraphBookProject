@@ -192,12 +192,12 @@ public class NeoDatabase implements IDatabase {
         connect();
         try (Session session = driver.session()) {
     
-            String query = "CREATE (n:Concept {text: $concept, elementId: $concept}) " +
-                           "WITH n " +
+            String query = "MERGE (a:Concept {elementId: $concept}) " +
+                           "ON CREATE SET a.text = $concept " +
+                           "WITH a " +
                            "UNWIND $scores as score " +
                            "MATCH (b:Page {elementId: score.pageElementId}) " +
-                           "MERGE (a:Concept {elementId: $concept}) " +
-                           "CREATE (a)-[r:EDGE {weight: score.score}]->(b)";
+                           "MERGE (a)-[r:EDGE {weight: score.score}]->(b)";
     
             List<Map<String, Object>> scores = conceptScores.stream().map(pair -> {
                 String pageElementId = label + pair.getEl1();
@@ -208,7 +208,7 @@ public class NeoDatabase implements IDatabase {
         } finally {
             disconnect();
         }
-    }    
+    } 
 
     /**
      * Clears all edges from the Neo4j database by deleting all relationships.

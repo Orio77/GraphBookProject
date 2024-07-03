@@ -3,9 +3,12 @@ package com.graphbook.frontend.service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,6 +28,7 @@ import com.graphbook.frontend.interfaces.IFileChooser;
 import com.graphbook.server.ISimilarityClient;
 import com.graphbook.server.impl.ApacheHTTP_SimilarityClient;
 import com.graphbook.server.impl.PythonManager;
+import com.graphbook.util.InputParser;
 
 /**
  * Manages the GraphBook GUI interactions and operations.
@@ -242,6 +246,40 @@ public class GraphBookGUIManager {
         String concept = fileChooser.getUserInput("Concept", "Please enter the concept: ");
         List<Pair<Integer, Double>> scores = getConceptScores(concept, pdf.getEl1(), pdf.getEl2());
         createEdges(concept, scores, pdf.getEl2());
+    }
+
+    public void addConceptToAll() {
+        String concept = fileChooser.getUserInput("Concept", "Please enter the concept: ");
+        Pair<List<List<PDFText>>, List<String>> pdfsWithLabels = getPdfsForConcept();
+        for (int i = 0; i < pdfsWithLabels.getEl1().size(); i++) {
+            List<Pair<Integer, Double>> scores = getConceptScores(concept, pdfsWithLabels.getEl1().get(i), pdfsWithLabels.getEl2().get(i));
+            createEdges(concept, scores, pdfsWithLabels.getEl2().get(i));
+        }
+    }
+
+    private Pair<List<List<PDFText>>, List<String>> getPdfsForConcept() {
+        String input = fileChooser.getUserInput("How many pdfs do you wish to be connected to the concept", "Provide a number");
+        int digit = new InputParser().getDigit(input);
+        List<List<PDFText>> pdfs = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+
+        for (int i = 0; i < digit; i++) {
+            Pair<List<PDFText>, String> pdfWithLabel = loadSavedPDF();
+            pdfs.add(pdfWithLabel.getEl1());
+            labels.add(pdfWithLabel.getEl2());
+        }
+
+        return new Pair<List<List<PDFText>>,List<String>>(pdfs, labels);
+    }
+
+    public void connectTheGraph() {
+        Pair<List<PDFText>, String> pdfWithLabel = loadSavedPDF();
+        List<PDFText> pdf = pdfWithLabel.getEl1();
+        String label = pdfWithLabel.getEl2();
+
+        Map<Integer, List<Pair<Integer, Double>>> res = getEdgeValues(pdf, label, 80.0);
+
+        database.createEdges(res, label);
     }
 
     /**

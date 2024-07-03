@@ -33,6 +33,9 @@ class Mistral(LLM):
         if os.path.exists(self.results_path):
             with open(self.results_path, 'r') as f:
                 results = json.load(f)
+            # Ensure results is a dictionary
+            if not isinstance(results, dict):
+                results = {}  # Reset results if it's not a dictionary
         else:
             results = {}
             with open(self.results_path, 'w') as f:
@@ -78,17 +81,19 @@ class Mistral(LLM):
                     'content': 'Score: '
                 },
                 ],
-                options={'temperature': 0.7, 'num_predict': 5}, keep_alive=-1)
+                options={'temperature': 0.7, 'num_predict': 3}, keep_alive=-1)
                 ai_response = response['message']['content']
+                print("result: " + ai_response)
                 # Extract score out of the response
-                score_match = re.match(r'^(\d+\.\d+)', ai_response)
+                score_match = re.match(r'(\d+(?:\.\d+)?)', ai_response)
+
                 if score_match:
                     score = float(score_match.group())
                 else:
                     score = -1
 
-                # Store results in dictionary
                 if i not in results:
+                # Store results in dictionary
                     results[i] = []
                 results[int(i)].append({"el1": int(j),"el2": float(score)})
 
