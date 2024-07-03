@@ -14,9 +14,25 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import com.graphbook.backend.model.PDFText;
 import com.graphbook.backend.service.IPdfHandler;
 
-public class PDFBoxHandler implements IPdfHandler{
+/**
+ * The {@code PDFBoxHandler} class provides implementations for handling PDF files
+ * using the Apache PDFBox library. It includes methods to extract text content
+ * from PDF files and to split PDF files into individual pages, extracting text from each page.
+ * <p>
+ * This class implements the {@code IPdfHandler} interface.
+ * </p>
+ */
+public class PDFBoxHandler implements IPdfHandler {
     private Logger logger = LogManager.getLogger(getClass());
 
+    /**
+     * Extracts the text content from a PDF file.
+     *
+     * @param pdf the PDF file from which to extract text.
+     * @return a {@code PDFText} object containing the text extracted from the PDF.
+     * @throws IllegalArgumentException if the PDF file is {@code null}.
+     * @throws RuntimeException if an IOException occurs while processing the PDF.
+     */
     public PDFText getContent(File pdf) {
         if (pdf == null) {
             throw new IllegalArgumentException("PDF file cannot be null");
@@ -29,65 +45,67 @@ public class PDFBoxHandler implements IPdfHandler{
             return new PDFText(text);
         } catch (IOException e) {
             logger.error(e);
-            throw new RuntimeException("IOException occured while getting content of a pdf. Check the error log for details.");
-        }
-        finally {
+            throw new RuntimeException("IOException occurred while getting content of a PDF. Check the error log for details.", e);
+        } finally {
             if (doc != null) {
                 try {
                     doc.close();
                 } catch (IOException e) {
                     logger.error(e);
-                    throw new RuntimeException("IOException occured while closing a pdf. Check the error log for details.");
+                    throw new RuntimeException("IOException occurred while closing a PDF. Check the error log for details.", e);
                 }
             }
         }
     }
 
-    // TODO Change the Read method to take in a File, and let it be used in the frontend code
+    /**
+     * Reads a PDF file, splits it into individual pages, and extracts text from each page.
+     *
+     * @param chosenPDF the PDF file to be read.
+     * @return a list of {@code PDFText} objects, each containing text extracted from a page of the PDF.
+     * @throws IllegalArgumentException if the chosen PDF file is {@code null}.
+     * @throws RuntimeException if an IOException occurs while processing the PDF.
+     */
     @Override
     public List<PDFText> read(File chosenPDF) {
         if (chosenPDF == null) {
             throw new IllegalArgumentException("Chosen PDF file cannot be null");
         }
-        // read the doc
         PDDocument pdf = null;
         try {
             pdf = PDDocument.load(chosenPDF);
         } catch (IOException e) {
             logger.error(e);
-            throw new RuntimeException("IOException occured while loading a pdf. Check the error log for details.");
+            throw new RuntimeException("IOException occurred while loading a PDF. Check the error log for details.", e);
         }
 
-        // split the pages
         Splitter splitter = new Splitter();
-        List<PDDocument> pages = null;
+        List<PDDocument> pages;
         try {
             pages = splitter.split(pdf);
         } catch (IOException e) {
             logger.error(e);
-            throw new RuntimeException("IOException occured while splitting the pdf. Check the error log for details.");
+            throw new RuntimeException("IOException occurred while splitting the PDF. Check the error log for details.", e);
         }
 
-        // get the text out of pages
         List<PDFText> stringPages = new ArrayList<>();
         try {
             PDFTextStripper stripper = new PDFTextStripper();
             for (PDDocument page : pages) {
                 String textOfPage = stripper.getText(page);
-                if (textOfPage.length() < 300) continue; // ommitt the little text pages
+                if (textOfPage.length() < 300) continue; // omit the little text pages
                 stringPages.add(new PDFText(textOfPage));
             }
         } catch (IOException e) {
             logger.error(e);
-            throw new RuntimeException("IOException occured while stripping the text doc state may ve invalid or encrypted. Check the error log for details.");
-        }
-        finally {
+            throw new RuntimeException("IOException occurred while stripping the text. Document state may be invalid or encrypted. Check the error log for details.", e);
+        } finally {
             if (pdf != null) {
                 try {
                     pdf.close();
                 } catch (IOException e) {
                     logger.error(e);
-                    throw new RuntimeException("IOException occured while closing a pdf. Check the error log for details.");
+                    throw new RuntimeException("IOException occurred while closing a PDF. Check the error log for details.", e);
                 }
             }
         }

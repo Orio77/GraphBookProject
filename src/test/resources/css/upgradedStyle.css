@@ -1,0 +1,48 @@
+.button {
+    background-color: #2b2b2b;
+    color: #c0c0c0;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border-color: #7d3cff;
+    border-width: 1px;
+    border-style: solid; /* Added for JavaFX compatibility */
+    -fx-background-color: linear-gradient(#3a3a3a, #2b2b2b);
+    -fx-text-fill: #c0c0c0;
+    -fx-font-size: 14px;
+    -fx-padding: 10px 20px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 10, 0, 0, 0);
+    -fx-border-color: #7d3cff;
+    -fx-border-width: 1px;
+}
+
+.button:hover {
+    background-color: #383838;
+    color: #ffffff;
+    -fx-background-color: linear-gradient(#4d4d4d, #383838);
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(three-pass-box, rgba(125, 60, 255, 0.6), 15, 0, 0, 0);
+}
+
+.menu-bar {
+    background-color: #333;
+    color: #c0c0c0;
+    -fx-background-color: #333;
+    -fx-text-fill: #c0c0c0;
+}
+
+.menu-bar .menu {
+    color: #c0c0c0;
+    -fx-text-fill: #c0c0c0;
+}
+
+.root {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    background-color: #1e1e1e;
+    -fx-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #1e1e1e;
+}

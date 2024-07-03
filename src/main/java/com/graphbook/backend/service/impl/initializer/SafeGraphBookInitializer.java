@@ -13,17 +13,31 @@ import org.apache.logging.log4j.Logger;
 import com.graphbook.backend.service.IGraphBookInitializer;
 import com.graphbook.backend.service.impl.dataManagers.GraphBookConfigManager;
 
+/**
+ * Implementation of {@link IGraphBookInitializer} that initializes the GraphBook project
+ * in a safe manner, ensuring necessary directories are created and configurations are saved.
+ */
 public class SafeGraphBookInitializer implements IGraphBookInitializer {
     private GraphBookConfigManager configManager;
     private Path configPath;
     private final Logger logger = LogManager.getLogger(getClass());
 
+    /**
+     * Constructs a new SafeGraphBookInitializer with the specified initial directory.
+     * 
+     * @param initialDir the initial directory where the project will be initialized.
+     */
     public SafeGraphBookInitializer(File initialDir) {
         setProjectPath(initialDir);
         createNecessaryDirectories();
         configManager.saveToConfigFile();
     }
 
+    /**
+     * Sets the project path and initializes the configuration manager.
+     * 
+     * @param chosenDir the directory chosen by the user for the project.
+     */
     @Override
     public void setProjectPath(File chosenDir) {
         this.configPath = getConfigFilePath("config.json");
@@ -39,6 +53,12 @@ public class SafeGraphBookInitializer implements IGraphBookInitializer {
         configManager.addProperty("GraphBookProject", "Scores", scoresPath.toString());
     }
 
+    /**
+     * Retrieves the configuration file path for the specified file name.
+     * 
+     * @param fileName the name of the configuration file.
+     * @return the path to the configuration file.
+     */
     private Path getConfigFilePath(String fileName) {
         try {
             Path classFileDir = Paths.get(Objects.requireNonNull(getClass().getProtectionDomain().getCodeSource().getLocation().toURI())).getParent();
@@ -56,6 +76,9 @@ public class SafeGraphBookInitializer implements IGraphBookInitializer {
         }
     }
 
+    /**
+     * Creates the necessary directories for the project if they do not exist.
+     */
     @Override
     public void createNecessaryDirectories() {
         Path projectDirPath = Paths.get(new GraphBookConfigManager().getProperty("GraphBookProject", "ProjectPath"));
@@ -68,6 +91,11 @@ public class SafeGraphBookInitializer implements IGraphBookInitializer {
         }
     }
 
+    /**
+     * Retrieves the configuration file path.
+     * 
+     * @return the path to the configuration file.
+     */
     public static Path getConfigFilePath() {
         try {
             URL url = Thread.currentThread().getContextClassLoader().getResource("");

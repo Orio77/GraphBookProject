@@ -19,13 +19,17 @@ import com.graphbook.backend.service.impl.dataManagers.GraphBookConfigManager;
 import com.graphbook.backend.service.impl.dataManagers.JDataManager;
 import com.graphbook.backend.service.impl.dataManagers.PDFBoxHandler;
 import com.graphbook.backend.service.impl.database.NeoDatabase;
-import com.graphbook.backend.service.impl.graphTools.PlotManager;
 import com.graphbook.backend.service.impl.initializer.SafeGraphBookInitializer;
+import com.graphbook.backend.service.impl.plotTools.PlotManager;
 import com.graphbook.frontend.interfaces.IFileChooser;
 import com.graphbook.server.ISimilarityClient;
 import com.graphbook.server.impl.ApacheHTTP_SimilarityClient;
 import com.graphbook.server.impl.PythonManager;
 
+/**
+ * Manages the GraphBook GUI interactions and operations.
+ * Provides methods to handle PDF files, create graphs, manage databases, and generate charts.
+ */
 public class GraphBookGUIManager {
     private final IFileChooser fileChooser;
     private final IPdfHandler pdfHandler;
@@ -36,7 +40,9 @@ public class GraphBookGUIManager {
     private GraphBookConfigManager configManager;
     private final PythonManager pythonManager;
 
-    // default
+    /**
+     * Default constructor initializing all dependencies with their default implementations.
+     */
     public GraphBookGUIManager() {
         fileChooser = new JFxFileChooserReworked();
         pdfHandler = new PDFBoxHandler();
@@ -48,9 +54,56 @@ public class GraphBookGUIManager {
         pythonManager = new PythonManager();
     }
 
-    
+    /**
+     * Constructor allowing custom implementations of dependencies.
+     *
+     * @param fileChooser   the file chooser implementation
+     * @param pdfHandler    the PDF handler implementation
+     * @param database      the database implementation
+     * @param dataManager   the data manager implementation
+     * @param client        the similarity client implementation
+     * @param plotManager   the plot manager implementation
+     * @param configManager the configuration manager implementation
+     * @param pythonManager the Python manager implementation
+     */
+    public GraphBookGUIManager(IFileChooser fileChooser, IPdfHandler pdfHandler, IDatabase database,
+                               IDataManager dataManager, ISimilarityClient client, PlotManager plotManager,
+                               GraphBookConfigManager configManager, PythonManager pythonManager) {
+        this.fileChooser = fileChooser;
+        this.pdfHandler = pdfHandler;
+        this.database = database;
+        this.dataManager = dataManager;
+        this.client = client;
+        this.plotManager = plotManager;
+        this.configManager = configManager;
+        this.pythonManager = pythonManager;
+    }
 
-    // TODO Read pdf
+    /**
+     * Constructor for minimal initialization.
+     *
+     * @param fileChooser   the file chooser implementation
+     * @param pdfHandler    the PDF handler implementation
+     * @param dataManager   the data manager implementation
+     * @param configManager the configuration manager implementation
+     */
+    public GraphBookGUIManager(IFileChooser fileChooser, IPdfHandler pdfHandler, IDataManager dataManager,
+                               GraphBookConfigManager configManager) {
+        this.fileChooser = fileChooser;
+        this.pdfHandler = pdfHandler;
+        this.dataManager = dataManager;
+        this.configManager = configManager;
+        database = new NeoDatabase();
+        client = new ApacheHTTP_SimilarityClient();
+        plotManager = new PlotManager();
+        pythonManager = new PythonManager();
+    }
+
+    /**
+     * Reads a PDF file chosen by the user and saves it.
+     *
+     * @return a pair containing the list of PDF texts and the name of the PDF
+     */
     public Pair<List<PDFText>, String> readPDF() {
         File pdf = fileChooser.choosePDF();
         String pdfName = fileChooser.getUserInput("Naming PDF", "Please enter a name for your pdf: ");
@@ -59,12 +112,14 @@ public class GraphBookGUIManager {
         return new Pair<>(cleanPDF, pdfName);
     }
 
-
-
+    /**
+     * Loads a saved PDF file chosen by the user.
+     *
+     * @return a pair containing the list of PDF texts and the label of the PDF
+     */
     public Pair<List<PDFText>, String> loadSavedPDF() {
         File savedDir = configManager.getSavedPdfsPath().toFile();
         if (savedDir.list().length == 0) {
-            // Information that no pdfs are saved, please choose a pdf you'd like to save and work with
             return readPDF();
         }
         File savedPDF = fileChooser.chooseTXT(savedDir);
@@ -72,49 +127,63 @@ public class GraphBookGUIManager {
         return new Pair<>(dataManager.loadPDF(savedPDF), label);
     }
 
+    /**
+     * Loads saved scores from a JSON file chosen by the user.
+     *
+     * @return a pair containing the scores file and the label
+     */
     public Pair<File, String> loadSavedScores() {
-        
-
         File savedDir = configManager.getSavedPdfsPath().toFile();
         if (savedDir.list().length == 0) {
-            // Information that no pdfs are saved, please choose a pdf you'd like to save and work with
             throw new RuntimeException("No saved scores");
         }
         File savedScores = fileChooser.chooseJSON(savedDir);
         String label = savedScores.getParentFile().getName();
-        System.out.println(label); // TODO DELETE
         return new Pair<>(savedScores, label);
     }
 
-    // TODO Start Process of Edge Creation
-    private Map<Integer, List<Pair<Integer, Double>>> getEdgeValues(List<PDFText> pdf, String label, Double similarityTreshold) {
+    /**
+     * Retrieves edge values based on similarity threshold.
+     *
+     * @param pdf                the list of PDF texts
+     * @param label              the label of the PDF
+     * @param similarityThreshold the similarity threshold
+     * @return a map of edge values
+     */
+    private Map<Integer, List<Pair<Integer, Double>>> getEdgeValues(List<PDFText> pdf, String label, Double similarityThreshold) {
         pythonManager.runPythonAIServer();
-        
         Map<Integer, List<Pair<Integer, Double>>> res = client.getSimilarityBatchResponse(pdf, label);
         if (res == null) {
             throw new RuntimeException("Response is null");
         }
-
         Map<Integer, List<Pair<Integer, Double>>> filteredRes = new HashMap<>();
-
         res.entrySet().stream().forEach(entry -> {
-            List<Pair<Integer, Double>> filteredList = entry.getValue().stream().filter(pair -> pair.getEl2() > similarityTreshold).collect(Collectors.toList());
+            List<Pair<Integer, Double>> filteredList = entry.getValue().stream().filter(pair -> pair.getEl2() > similarityThreshold).collect(Collectors.toList());
             filteredRes.put(entry.getKey(), filteredList);
         });
-
         printEdgeValues(res);
         printEdgeValues(filteredRes);
         return filteredRes;
     }
 
+    /**
+     * Retrieves concept scores.
+     *
+     * @param concept the concept to score
+     * @param pdf     the list of PDF texts
+     * @param label   the label of the PDF
+     * @return a list of concept scores
+     */
     private List<Pair<Integer, Double>> getConceptScores(String concept, List<PDFText> pdf, String label) {
         pythonManager.runPythonAIServer();
-
-        List<Pair<Integer, Double>> res = client.getConceptScores(pdf, label, concept);
-
-        return res;
+        return client.getConceptScores(pdf, label, concept);
     }
 
+    /**
+     * Prints edge values.
+     *
+     * @param edges the map of edge values
+     */
     private void printEdgeValues(Map<Integer, List<Pair<Integer, Double>>> edges) {
         edges.entrySet().stream().forEach(entry -> {
             System.out.println("Key: " + entry.getKey());
@@ -122,104 +191,140 @@ public class GraphBookGUIManager {
         });
     }
 
+    /**
+     * Creates edges in the database.
+     *
+     * @param res   the map of edge values
+     * @param label the label of the PDF
+     */
     private void createEdges(Map<Integer, List<Pair<Integer, Double>>> res, String label) {
         database.createEdges(res, label);
     }
 
+    /**
+     * Creates edges for a specific concept in the database.
+     *
+     * @param concept      the concept to score
+     * @param conceptScores the list of concept scores
+     * @param label        the label of the PDF
+     */
     private void createEdges(String concept, List<Pair<Integer, Double>> conceptScores, String label) {
         database.createEdges(concept, conceptScores, label);
     }
 
-    // default
+    /**
+     * Creates a graph from a saved PDF.
+     */
     public void createGraph() {
         Pair<List<PDFText>, String> pdf = loadSavedPDF();
-
         database.save(pdf.getEl1(), pdf.getEl2());
         Map<Integer, List<Pair<Integer, Double>>> edges = getEdgeValues(pdf.getEl1(), pdf.getEl2(), 80.0);
         createEdges(edges, pdf.getEl2());
     }
 
-    public void createGraph(double similarityTreshold) {
+    /**
+     * Creates a graph from a saved PDF with a specified similarity threshold.
+     *
+     * @param similarityThreshold the similarity threshold
+     */
+    public void createGraph(double similarityThreshold) {
         Pair<List<PDFText>, String> pdf = loadSavedPDF();
-
         database.save(pdf.getEl1(), pdf.getEl2());
-        Map<Integer, List<Pair<Integer, Double>>> edges = getEdgeValues(pdf.getEl1(), pdf.getEl2(), similarityTreshold);
+        Map<Integer, List<Pair<Integer, Double>>> edges = getEdgeValues(pdf.getEl1(), pdf.getEl2(), similarityThreshold);
         createEdges(edges, pdf.getEl2());
     }
 
+    /**
+     * Adds a concept to the graph.
+     */
     public void addConcept() {
         Pair<List<PDFText>, String> pdf = loadSavedPDF();
         String concept = fileChooser.getUserInput("Concept", "Please enter the concept: ");
-
         List<Pair<Integer, Double>> scores = getConceptScores(concept, pdf.getEl1(), pdf.getEl2());
         createEdges(concept, scores, pdf.getEl2());
     }
 
-
-    // TODO Continue with Edge Creation - automatic checkpoint / chosen checkpoint with info of page recommended to continue from
-    public Map<Integer, List<Pair<Integer, Double>>> continueWithEdgeCreation(List<PDFText> pdf) {
+    /**
+     * Continues edge creation from a given PDF.
+     *
+     * @param pdf the list of PDF texts
+     * @return a map of edge values
+     */
+    public Map<Integer, List<Pair<Integer, Double>>> continueWithEdgeCreation(List<PDFText> pdf) { // TODO
         return null;
     }
 
+    /**
+     * Creates edges from previously calculated scores.
+     */
     public void createEdgesScoresCalculated() {
-
         Pair<File, String> savedScores = loadSavedScores();
-
         try {
-            Map<Integer, List<Pair<Integer, Double>>> scores = new ObjectMapper().readValue(savedScores.getEl1(), new TypeReference<Map<Integer, List<Pair<Integer, Double>>>>(){});
-            
+            Map<Integer, List<Pair<Integer, Double>>> scores = new ObjectMapper().readValue(savedScores.getEl1(), new TypeReference<Map<Integer, List<Pair<Integer, Double>>>>() {});
             scores.entrySet().stream().forEach(entry -> {
                 System.out.println("key: " + entry.getKey());
                 System.out.println("val: " + entry.getValue());
             });
-
             createEdges(scores, savedScores.getEl2());
         } catch (IOException e) {
-            throw new RuntimeException("Error reading scores");
-        }   
+            throw new RuntimeException("Error reading scores", e);
+        }
     }
 
+    /**
+     * Creates a chart based on the graph data.
+     */
     public void createChart() {
         pythonManager.runPythonPlotServer();
         database.connect();
-
         List<String> conceptList = database.getConceptList();
         List<String> chosenConcepts = fileChooser.chooseConcepts(conceptList);
         System.out.println(chosenConcepts);
         Map<String, List<Pair<String, Double>>> res = database.getConceptNodes(chosenConcepts);
         database.disconnect();
         System.out.println(res);
-
         plotManager.showGraph(res);
-        
         String chartLabel = fileChooser.getUserInput("Chart Label", "Please provide a label for the chart: ");
         plotManager.savePlotData(res, chartLabel);
     }
 
+    /**
+     * Displays a chart with the specified label.
+     *
+     * @param label the label of the chart
+     */
     public void showChart(String label) {
         pythonManager.runPythonPlotServer();
-
         plotManager.loadPlot(label);
     }
 
+    /**
+     * Displays a chart chosen by the user.
+     */
     public void showChart() {
         pythonManager.runPythonPlotServer();
-
         File chosenChart = fileChooser.chooseTXT(Paths.get(configManager.getProperty("GraphBookProject", "SavedPlotData")).toFile());
         plotManager.loadPlot(chosenChart);
     }
 
+    /**
+     * Initializes a new project directory.
+     */
     public void initializeProject() {
         File projectDir = fileChooser.chooseDir();
         new SafeGraphBookInitializer(projectDir);
     }
 
+    /**
+     * Exits the GUI.
+     */
     public void exitGUI() {
         fileChooser.exit();
     }
-    // frontend Interface
-    // Backend Interface
 
+    /**
+     * Clears the database.
+     */
     public void clearDatabase() {
         database.reset();
     }

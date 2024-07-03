@@ -22,6 +22,37 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * The {@code Main} class serves as the entry point for the Graph Book application, a JavaFX-based desktop application.
+ * It initializes the JavaFX platform, sets up the primary stage (window) with various UI components, and manages the
+ * application's lifecycle. This class is responsible for creating the user interface, including buttons for various
+ * functionalities such as reading, loading, and creating PDFs and graphs, as well as adding concepts and creating charts.
+ * It also handles the application's exit process.
+ * 
+ * <p>Key features of the {@code Main} class include:</p>
+ * <ul>
+ *     <li>Initialization of the {@code GraphBookGUIManager} for managing GUI-related actions.</li>
+ *     <li>Creation of a primary stage with a title, icon, and various UI components arranged in a {@code BorderPane} layout.</li>
+ *     <li>Dynamic layout adjustments based on window size and state (fullscreen or maximized).</li>
+ *     <li>Application of CSS for styling, with a fallback mechanism if the CSS file is not found.</li>
+ *     <li>Use of multithreading for performing actions triggered by button clicks to ensure a responsive UI.</li>
+ *     <li>Implementation of a glowing effect on the main application icon using a {@code Timeline} animation.</li>
+ *     <li>Custom button creation method that standardizes the appearance and behavior of buttons across the application.</li>
+ * </ul>
+ * 
+ * <p>The application's UI is divided into several sections:</p>
+ * <ul>
+ *     <li>A central area for displaying buttons in either a {@code GridPane} or {@code VBox} layout, depending on the window state.</li>
+ *     <li>A right section dedicated to displaying the main application icon with a glowing animation effect.</li>
+ *     <li>A background image that fills the entire window, with its opacity and size adjusted for aesthetic purposes.</li>
+ * </ul>
+ * 
+ * <p>Listeners are added to various properties (e.g., window size, fullscreen, maximized) to dynamically adjust the layout
+ * and appearance of UI components based on the current state of the application window.</p>
+ * 
+ * <p>This class demonstrates the use of JavaFX for building a desktop application, showcasing various techniques such as
+ * handling events, working with images and animations, and applying CSS for styling.</p>
+ */
 public class Main {
 
     private static GraphBookGUIManager manager;
@@ -180,6 +211,18 @@ public class Main {
         });
     }
 
+    /**
+     * The {@code createButton} method is a utility function designed to standardize the creation of buttons within the application.
+     * It takes a button label, an icon path, and an icon size as parameters to create a customized {@code Button} instance.
+     * This method encapsulates the process of loading an icon from a specified path, resizing it to the desired dimensions,
+     * and attaching it to the button. Additionally, it applies a custom CSS class to the button to ensure consistent styling
+     * across the application.
+     * 
+     * @param text The text label for the button.
+     * @param iconPath The relative path to the icon image file.
+     * @param iconSize The desired size for the icon's width and height.
+     * @return A {@code Button} instance with the specified label, icon, and styling.
+     */
     private static Button createButton(String text, String iconPath, double iconSize) {
         Button button = new Button(text);
         InputStream iconStream = Main.class.getResourceAsStream(iconPath);

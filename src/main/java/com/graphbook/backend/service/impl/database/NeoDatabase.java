@@ -20,9 +20,18 @@ import com.graphbook.backend.model.PDFText;
 import com.graphbook.backend.model.Pair;
 import com.graphbook.backend.service.IDatabase;
 
+/**
+ * Implementation of the {@link IDatabase} interface using Neo4j as the backend database.
+ * This class provides methods to connect to a Neo4j database, save PDF text elements,
+ * create edges between nodes, and retrieve concept-related data.
+ */
 public class NeoDatabase implements IDatabase {
     private Driver driver = null;
 
+    /**
+     * Connects to the Neo4j database using the specified connection parameters.
+     * If the connection fails, an appropriate message is printed, and an exception stack trace is shown.
+     */
     @Override
     public void connect() {
         try {
@@ -38,13 +47,27 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    /**
+     * Saves a list of {@link PDFText} elements to the Neo4j database under the specified label.
+     * Each element is saved as a node with the provided label and a unique element ID.
+     *
+     * @param texts The list of {@link PDFText} elements to be saved. Must not be null or empty.
+     * @param label The label to be assigned to each node. Must not be null or empty.
+     * @throws IllegalArgumentException if texts or label is null or empty.
+     */
     @Override
     public void save(List<PDFText> texts, String label) {
-        if (texts == null || texts.isEmpty()) {
+        if (texts == null) {
             throw new IllegalArgumentException("Texts cannot be null");
         }
-        if (label == null || label.isEmpty()) {
-            throw new IllegalArgumentException("Label cannot be null or empty");
+        else if (texts.isEmpty()) {
+            throw new IllegalArgumentException("Texts cannot be empty");
+        }
+        else if (label == null) {
+            throw new IllegalArgumentException("Label cannot be null");
+        }
+        else if (label.isEmpty()) {
+            throw new IllegalArgumentException("Label cannot be empty");
         }
         connect();
         try (Session session = driver.session()) {
@@ -77,6 +100,9 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    /**
+     * Disconnects from the Neo4j database by closing the driver if it is not null.
+     */
     @Override
     public void disconnect() {
         if (driver != null) {
@@ -84,6 +110,16 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    /**
+     * Creates an edge between two {@link PDFText} nodes with a specified similarity score and page number.
+     * The nodes are identified by their text content, and the edge is labeled with the page number.
+     *
+     * @param text1 The first {@link PDFText} element. Must not be null.
+     * @param text2 The second {@link PDFText} element. Must not be null.
+     * @param similarityScore The similarity score to be assigned to the edge.
+     * @param pageNum The page number to be used as the label for the edge.
+     * @throws IllegalArgumentException if text1 or text2 is null.
+     */
     public void createEdge(PDFText text1, PDFText text2, double similarityScore, int pageNum) {
         if (text1 == null) {
             throw new IllegalArgumentException("text1 cannot be null");
@@ -95,11 +131,22 @@ public class NeoDatabase implements IDatabase {
             String content1 = text1.getText();
             String content2 = text2.getText();
 
-            session.run("MATCH (a:Page {text: $textA}), (b:Page {text: $textB})" + "MERGE (a)-[r:RELATED {value: $value}]->(b)" + "MERGE (a)-[s:" + "P" + pageNum + " {value: $value}]->(b)", Values.parameters("textA", content1, "textB", content2, "value", similarityScore));
+            session.run("MATCH (a:Page {text: $textA}), (b:Page {text: $textB})" + 
+                        "MERGE (a)-[r:RELATED {value: $value}]->(b)" + 
+                        "MERGE (a)-[s:P" + pageNum + " {value: $value}]->(b)", 
+                        Values.parameters("textA", content1, "textB", content2, "value", similarityScore));
         } 
     }
 
-    // HashMap = {id, {other_id, weight(double)}}
+    /**
+     * Creates edges between nodes based on a provided map of results. Each entry in the map represents
+     * a node and its associated edges, with weights representing the edge properties.
+     *
+     * @param result A map where the key is the node ID and the value is a list of pairs representing 
+     *               the other node IDs and their corresponding weights.
+     * @param label The label to be assigned to the nodes.
+     * @throws IllegalArgumentException if result is null or empty, or if label is null or empty.
+     */
     public void createEdges(Map<Integer, List<Pair<Integer, Double>>> result, String label) {
         if (label == null || label.isEmpty()) {
             throw new IllegalArgumentException("Label cannot be null or empty");
@@ -133,6 +180,14 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    /**
+     * Creates edges between a concept node and a list of PDF text nodes based on their scores.
+     * Each edge is labeled with the concept name and the corresponding score.
+     *
+     * @param concept The concept name to be used as the label for the concept node.
+     * @param conceptScores A list of pairs representing the PDF text node IDs and their corresponding scores.
+     * @param label The label to be assigned to the PDF text nodes.
+     */
     public void createEdges(String concept, List<Pair<Integer, Double>> conceptScores, String label) {
         connect();
         try (Session session = driver.session()) {
@@ -155,6 +210,9 @@ public class NeoDatabase implements IDatabase {
         }
     }    
 
+    /**
+     * Clears all edges from the Neo4j database by deleting all relationships.
+     */
     public void clearAllEdges() {
         connect();
         try (Session session = driver.session()) {
@@ -170,12 +228,17 @@ public class NeoDatabase implements IDatabase {
         }
     }
 
+    /**
+     * Retrieves a list of all concept nodes' texts from the Neo4j database.
+     *
+     * @return A list of concept texts.
+     */
     public List<String> getConceptList() {
         List<String> conceptList = null;
         try (Session session = driver.session()) {
             String cypherQuery = "MATCH (n:Concept) RETURN n.text AS text";
             conceptList = session.run(cypherQuery)
-                                        .list(record -> record.get("text").asString());
+                                 .list(record -> record.get("text").asString());
 
             System.out.println(conceptList);
         }
@@ -189,6 +252,13 @@ public class NeoDatabase implements IDatabase {
         return conceptList;
     }
 
+    /**
+     * Retrieves the nodes and edges associated with the specified concepts.
+     * Each concept is associated with a list of pairs representing node IDs and their weights.
+     *
+     * @param chosenConcepts A list of concept names to retrieve nodes and edges for.
+     * @return A map where the key is the concept name and the value is a list of pairs representing node IDs and weights.
+     */
     public Map<String, List<Pair<String, Double>>> getConceptNodes(List<String> chosenConcepts) {
         Map<String, List<Pair<String, Double>>> conceptEdges = new HashMap<>();
         try (Session session = driver.session()) {
@@ -222,6 +292,9 @@ public class NeoDatabase implements IDatabase {
         return conceptEdges;
     }
 
+    /**
+     * Resets the Neo4j database by deleting all nodes and their relationships.
+     */
     @Override
     public void reset() {
         connect();

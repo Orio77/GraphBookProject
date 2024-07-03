@@ -5,22 +5,27 @@ import java.nio.file.Paths;
 
 import com.graphbook.backend.service.impl.dataManagers.GraphBookConfigManager;
 
+/**
+ * The {@code PythonManager} class is responsible for managing and running Python servers.
+ * It retrieves configuration details from {@link GraphBookConfigManager} and uses them to 
+ * start the specified Python servers.
+ */
 public class PythonManager {
-    private final GraphBookConfigManager configManager;
 
-    public PythonManager() {
+    private final GraphBookConfigManager configManager;
+    
+    /**
+     * Constructs a new {@code PythonManager} instance and initializes the configuration manager.
+     */
+    public PythonManager() { // TODO Handle Null Paths
         configManager = new GraphBookConfigManager();
     }
     
-    /*
-     *   "Python" : {
-    "PythonEnvPath" : "C:/Users/macie/anaconda3/envs/GraphBookProjectPyEnv/python.exe",
-    "PythonExecutable" : "python.exe",
-    "AIPythonServerPath" : "C:/Users/macie/Desktop/GBP/graph-book-core/py_llm_server/server",
-    "PlotPythonServerPath" : "C:/Users/macie/Desktop/GBP/graph-book-core/py_llm_server/server",
-    "AIPythonServerFileName" : "plot_python_server.py",
-    "PlotPythonServerFileName" : "ai_python_server.py"
-  },
+    /**
+     * Runs the AI Python server based on the configuration properties.
+     * Retrieves the Python executable name, server directory, and file name from the configuration.
+     * Starts the Python process and redirects its output to the Java program's output.
+     * Throws a {@link RuntimeException} if any of the configuration properties are null or empty.
      */
     public void runPythonAIServer() {
         String pythonExecutableName = configManager.getProperty("Python", "PythonExecutable");
@@ -37,18 +42,16 @@ public class PythonManager {
             throw new RuntimeException("Retrieved Python File Name was null or empty");
         }
 
-
-        ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutableName, pythonFileName); // TODO Handle null paths
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutableName, pythonFileName);
         processBuilder.directory(Paths.get(pythonServerDir).toFile());
     
         // Redirect the process's output to the Java program's output
         processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
     
-
         // Start the process and keep it running
         try {
-            processBuilder.start(); // Possible to keep the Process object to control the running server | return it?
+            processBuilder.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,6 +59,12 @@ public class PythonManager {
         waitForServerToStart();
     }
 
+    /**
+     * Runs the Plot Python server based on the configuration properties.
+     * Retrieves the Python executable name, server directory, and file name from the configuration.
+     * Starts the Python process and redirects its output to the Java program's output.
+     * Throws a {@link RuntimeException} if any of the configuration properties are null or empty.
+     */
     public void runPythonPlotServer() {
         String pythonExecutableName = configManager.getProperty("Python", "PythonExecutable");
         String pythonServerDir = configManager.getProperty("Python", "PlotPythonServerPath");
@@ -71,18 +80,16 @@ public class PythonManager {
             throw new RuntimeException("Retrieved Python File Name was null or empty");
         }
 
-
-        ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutableName, pythonFileName); // TODO Handle null paths
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutableName, pythonFileName);
         processBuilder.directory(Paths.get(pythonServerDir).toFile());
     
         // Redirect the process's output to the Java program's output
         processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
     
-
         // Start the process and keep it running
         try {
-            processBuilder.start(); // Possible to keep the Process object to control the running server | return it?
+            processBuilder.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -90,14 +97,23 @@ public class PythonManager {
         waitForServerToStart();
     }
 
+    /**
+     * Waits for the server to start by pausing the current thread for 5 seconds.
+     * Handles {@link InterruptedException} by re-interrupting the current thread.
+     */
     private void waitForServerToStart() {
         try {
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
+    /**
+     * The main method to run the AI Python server.
+     * 
+     * @param args the command-line arguments (not used)
+     */
     public static void main(String[] args) {
         new PythonManager().runPythonAIServer();
     }

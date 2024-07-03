@@ -28,9 +28,24 @@ import com.graphbook.server.IAISimilarityClient;
 import com.graphbook.util.PropertiesHandler;
 
 /**
- * ApacheHTTP_SimilarityClient is a class that communicates with a local AI service via HTTP requests.
- * The purpose of this class is to send two texts to the AI service and receive a similarity score as a double in the range of 0.0 to 100.0.
- * This class implements the IAISimilarityClient interface.
+ * The {@code ApacheHTTP_SimilarityClient} class is responsible for communicating with a local AI service
+ * through HTTP requests. It implements the {@code IAISimilarityClient} interface to provide functionality
+ * for sending text data to the AI service and receiving similarity scores or concept scores in response.
+ * This class utilizes Apache HTTP components for the network communication and Jackson for JSON processing.
+ * 
+ * <p>It offers two main functionalities:</p>
+ * <ul>
+ *     <li>Fetching batch similarity scores between provided texts and a label.</li>
+ *     <li>Fetching concept scores for a given concept across provided texts.</li>
+ * </ul>
+ * 
+ * <p>Errors during the HTTP communication or JSON processing are logged using a {@code Logger} instance,
+ * and exceptions are thrown to indicate failure scenarios to the caller.</p>
+ * 
+ * <p>Instances of this class are constructed without parameters. The class relies on an internal
+ * {@code ObjectMapper} for JSON serialization and deserialization, and a {@code Logger} for error logging.</p>
+ * 
+ * @see IAISimilarityClient
  */
 public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
     // ObjectMapper is used to convert Java objects to JSON and vice versa
@@ -39,65 +54,111 @@ public class ApacheHTTP_SimilarityClient implements IAISimilarityClient {
     private final Logger logger = LogManager.getLogger(ApacheHTTP_SimilarityClient.class);
 
     /**
-     * Constructor for the ApacheHTTP_SimilarityClient class.
-     * 
-     * @param extractor An instance of IAIResponseSimilarityScoreExtractor to extract the similarity score from the AI service's response.
+     * Constructs a new instance of {@code ApacheHTTP_SimilarityClient}. Initializes the internal
+     * {@code ObjectMapper} for JSON processing.
      */
     public ApacheHTTP_SimilarityClient() {
         this.MAPPER = new ObjectMapper();
     }
 
+    /**
+     * Sends a batch of PDF texts along with a label to the AI service and retrieves similarity scores.
+     * The scores are returned as a map where the key is an integer representing the PDF text identifier,
+     * and the value is a list of pairs, each containing an integer (representing another PDF text identifier)
+     * and a double (the similarity score between the two texts).
+     * 
+     * @param pdf A list of {@code PDFText} objects representing the PDF texts to be compared.
+     * @param label A string label against which the texts are compared for similarity.
+     * @return A map of integer keys to lists of pairs, representing the similarity scores between texts.
+     * @throws IllegalArgumentException If the provided PDF list or label is null or empty.
+     * @throws RuntimeException If the response from the AI service is null or if JSON processing fails.
+     */
     @Override
     public Map<Integer, List<Pair<Integer, Double>>> getSimilarityBatchResponse(List<PDFText> pdf, String label) {
-        String response = sendPDF(pdf, label, new String(), "SimilarityBatchURI");
+        // Validate input parameters
+        if (pdf == null || pdf.isEmpty()) {
+            throw new IllegalArgumentException("PDF list is null or empty.");
+        }
+        if (label == null || label.isEmpty()) {
+            throw new IllegalArgumentException("Label is null or empty.");
+        }
+        
+        // Send PDF and receive response
+        String response = sendPDF(pdf, label, "", "SimilarityBatchURI");
         if (response == null) {
             throw new RuntimeException("Received response from the Python Server was null. Check error log for details");
         }
-        String jsonResponse = response;
         
-        HashMap<String, HashMap<Integer, List<Pair<Integer, Double>>>> responseMap = null;
+        // Process JSON response
         try {
-            responseMap = MAPPER.readValue(jsonResponse, new TypeReference<HashMap<String, HashMap<Integer, List<Pair<Integer, Double>>>>>() {});
+            TypeReference<HashMap<String, HashMap<Integer, List<Pair<Integer, Double>>>>> typeRef = 
+                new TypeReference<HashMap<String, HashMap<Integer, List<Pair<Integer, Double>>>>>() {};
+            HashMap<String, HashMap<Integer, List<Pair<Integer, Double>>>> responseMap = MAPPER.readValue(response, typeRef);
+            return responseMap.get("similarity_batch");
         } catch (JsonMappingException e) {
-            logger.error("JsonMappingException occured.", e.getMessage(), e);
+            logger.error("JsonMappingException occurred.", e.getMessage(), e);
             throw new RuntimeException("Mapping Json Failed");
         } catch (JsonProcessingException e) {
-            logger.error("JsonMappingException occured.", e.getMessage(), e);
-            throw new RuntimeException("JsonProcessingException occured during mapping json");
+            logger.error("JsonProcessingException occurred during mapping json.", e.getMessage(), e);
+            throw new RuntimeException("JsonProcessingException occurred during mapping json");
         }
-
-        HashMap<Integer, List<Pair<Integer, Double>>> res = responseMap.get("similarity_batch");
-        return res;
     }
 
+    /**
+     * Sends a batch of PDF texts along with a label and a concept to the AI service and retrieves concept scores.
+     * The scores are returned as a list of pairs, each containing an integer (representing the PDF text identifier)
+     * and a double (the concept score for the text).
+     * 
+     * @param pdf A list of {@code PDFText} objects representing the PDF texts to be analyzed.
+     * @param label A string label used in the analysis.
+     * @param concept A string representing the concept for which scores are requested.
+     * @return A list of pairs, each containing an integer and a double, representing the concept scores for the texts.
+     * @throws IllegalArgumentException If any of the provided parameters (pdf list, label, or concept) is null or empty.
+     * @throws RuntimeException If the response from the AI service is null or if JSON processing fails.
+     */
     @Override
     public List<Pair<Integer, Double>> getConceptScores(List<PDFText> pdf, String label, String concept) {
+        // Validate input parameters
+        if (pdf == null || pdf.isEmpty()) {
+            throw new IllegalArgumentException("PDF list is null or empty.");
+        }
+        if (label == null || label.isEmpty()) {
+            throw new IllegalArgumentException("Label is null or empty.");
+        }
+        if (concept == null || concept.isEmpty()) {
+            throw new IllegalArgumentException("Concept is null or empty.");
+        }
+    
+        // Send PDF and receive response
         String response = sendPDF(pdf, label, concept, "ConceptURI");
         if (response == null) {
             throw new RuntimeException("Received response from the Python Server was null. Check error log for details");
         }
-        String jsonResponse = response;
-
-        Map<String, List<Pair<Integer, Double>>> responseMap = null;
-
+    
+        // Process JSON response
         try {
-            responseMap = MAPPER.readValue(jsonResponse, new TypeReference<Map<String, List<Pair<Integer, Double>>>>() {});
-        } 
-        catch (JsonMappingException e) {
-            logger.error("JsonMappingException occured.", e.getMessage(), e);
-            throw new RuntimeException("Mapping Json Failed");
+            Map<String, List<Pair<Integer, Double>>> responseMap = MAPPER.readValue(response, new TypeReference<Map<String, List<Pair<Integer, Double>>>>() {});
+            return responseMap.get("concept");
+        } catch (JsonMappingException e) {
+            logger.error("JSON mapping exception occurred.", e.getMessage(), e);
+            throw new RuntimeException("Error occurred during JSON mapping");
         } catch (JsonProcessingException e) {
-            logger.error("JsonMappingException occured.", e.getMessage(), e);
-            throw new RuntimeException("JsonProcessingException occured during mapping json");
+            logger.error("JSON processing exception occurred.", e.getMessage(), e);
+            throw new RuntimeException("Error occurred during JSON processing");
         }
-
-        List<Pair<Integer, Double>> res = responseMap.get("concept");
-        return res;
     }
 
+    /**
+     * Sends the PDF text, label, and concept to the specified URI and returns the response as a JSON string.
+     *
+     * @param pdf The list of {@link PDFText} to be sent.
+     * @param label The label associated with the PDF texts.
+     * @param concept The concept associated with the request, can be empty.
+     * @param uriLabel The label of the URI to send the request to.
+     * @return The response from the AI service as a JSON string.
+     */
     private String sendPDF(List<PDFText> pdf, String label, String concept, String uriLabel) {
         RequestConfig requestConfig = RequestConfig.custom()
-            // .setSocketTimeout(30000)  // socket timeout
             .setConnectTimeout(30000)  // connection timeout
             .build();
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {

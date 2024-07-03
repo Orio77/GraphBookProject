@@ -14,6 +14,7 @@ public interface IDatabase {
     void createEdges(Map<Integer, List<Pair<Integer, Double>>> result, String label);
     void createEdges(String concept, List<Pair<Integer, Double>> conceptScores, String label);
     void reset();
+    void clearAllEdges();
     List<String> getConceptList();
     Map<String, List<Pair<String, Double>>> getConceptNodes(List<String> chosenConcepts);
 }

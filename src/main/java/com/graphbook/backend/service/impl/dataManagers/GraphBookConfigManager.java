@@ -16,12 +16,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphbook.backend.service.impl.initializer.SafeGraphBookInitializer;
 
+/**
+ * Manages the configuration settings for the GraphBook application.
+ * This class provides methods to read, add, and save properties from a configuration file.
+ * It utilizes JSON format for storing configuration data.
+ */
 public class GraphBookConfigManager {
     private ObjectNode rootNode;
     private final Logger logger = LogManager.getLogger();
     private ObjectMapper mapper;
     private Path configFilePath;
 
+    /**
+     * Constructs a {@code GraphBookConfigManager} with a specified configuration file path.
+     * This constructor initializes the configuration and adds initial properties before saving to the file.
+     *
+     * @param configFilePath The path to the configuration file.
+     */
     public GraphBookConfigManager(Path configFilePath) {
         mapper = new ObjectMapper();
         this.configFilePath = configFilePath;
@@ -30,12 +41,21 @@ public class GraphBookConfigManager {
         saveToConfigFile();
     }
 
+    /**
+     * Constructs a {@code GraphBookConfigManager} with a default configuration file path read from properties.
+     */
     public GraphBookConfigManager() {
         mapper = new ObjectMapper();
         initialize();
         configFilePath = readConfigFilePath();
     }
 
+    /**
+     * Reads the configuration file path from properties.
+     *
+     * @return The path to the configuration file.
+     * @throws RuntimeException if the configuration path is not set.
+     */
     private Path readConfigFilePath() {
         String pathAsString = getProperty("GraphBookProject", "ConfigFilePath");
         if (pathAsString == null) {
@@ -45,13 +65,19 @@ public class GraphBookConfigManager {
         return Paths.get(pathAsString);
     }
 
+    /**
+     * Initializes the configuration by reading from the specified configuration file.
+     * If the file is empty or not found, a new configuration node is created.
+     *
+     * @throws RuntimeException if there is an error during initialization.
+     */
     private void initialize() {
         try {
             File configFile = SafeGraphBookInitializer.getConfigFilePath().toFile();
             if (configFile.length() < 2) {
                 rootNode = mapper.createObjectNode();
             } else {
-                rootNode = (ObjectNode) (mapper.readTree(configFile));
+                rootNode = (ObjectNode) mapper.readTree(configFile);
             }
         } catch (FileNotFoundException e) {
             logger.error(e);
@@ -65,6 +91,9 @@ public class GraphBookConfigManager {
         }
     }
 
+    /**
+     * Adds initial properties to the configuration.
+     */
     private void addInitialProperties() {
         addProperty("URIs", "SimilarityBatchUri", "http://192.168.1.46:5000/similarity_batch");
         addProperty("URIs", "PlotURI", "http://192.168.1.46:5001/generatePlot");
@@ -75,6 +104,13 @@ public class GraphBookConfigManager {
         addProperty("Python", "PythonServerFileName", "python_server.py");
     }
 
+    /**
+     * Retrieves the value of a specified property from the configuration.
+     *
+     * @param parentKey The parent key of the property.
+     * @param childKey The child key of the property.
+     * @return The value of the specified property, or null if not found.
+     */
     public String getProperty(String parentKey, String childKey) {
         if (rootNode.has(parentKey) && rootNode.get(parentKey).has(childKey)) {
             return rootNode.get(parentKey).get(childKey).asText();
@@ -84,6 +120,13 @@ public class GraphBookConfigManager {
         }
     }
 
+    /**
+     * Adds a property to the configuration under the specified parent and child keys.
+     *
+     * @param parentKey The parent key under which the property is added.
+     * @param childKey The child key of the property.
+     * @param value The value of the property.
+     */
     public void addProperty(String parentKey, String childKey, String value) {
         if (rootNode.has(parentKey)) {
             ((ObjectNode) rootNode.get(parentKey)).put(childKey, value);
@@ -95,6 +138,11 @@ public class GraphBookConfigManager {
         }
     }
 
+    /**
+     * Retrieves all properties in the configuration as a formatted string.
+     *
+     * @return A string representation of all properties in the configuration.
+     */
     public String getProperties() {
         StringBuilder sb = new StringBuilder();
         rootNode.fieldNames().forEachRemaining(name -> {
@@ -103,6 +151,11 @@ public class GraphBookConfigManager {
         return sb.toString();
     }
 
+    /**
+     * Saves the current configuration to the configuration file.
+     *
+     * @throws RuntimeException if there is an error during saving.
+     */
     public void saveToConfigFile() {
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(configFilePath.toFile(), rootNode);
@@ -121,6 +174,12 @@ public class GraphBookConfigManager {
         }
     }
 
+    /**
+     * Retrieves the path where PDFs are saved from the configuration.
+     *
+     * @return The path where PDFs are saved.
+     * @throws RuntimeException if the saved PDFs path property is not set.
+     */
     public Path getSavedPdfsPath() {
         initialize();
         String res = getProperty("GraphBookProject", "SavedPDFs");
@@ -130,6 +189,12 @@ public class GraphBookConfigManager {
         else return Paths.get(res);
     }
 
+    /**
+     * Retrieves the path where results are saved from the configuration.
+     *
+     * @return The path where results are saved.
+     * @throws RuntimeException if the results path property is not set.
+     */
     public Path getResultsPath() {
         initialize();
         String res = getProperty("GraphBookProject", "Scores");
