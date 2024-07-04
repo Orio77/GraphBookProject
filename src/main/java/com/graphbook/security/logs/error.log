@@ -1,0 +1,2 @@
+2024-07-03 19:00:38 ERROR PDFBoxHandler:78 - java.io.IOException
+2024-07-03 19:01:25 WARN  GraphBookConfigManager:118 - Property URIs.http:// this is not a valid URI not found

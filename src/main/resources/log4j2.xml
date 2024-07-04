@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <!-- Define a rolling file appender that creates a new file for each log event -->
+        <RollingFile name="ErrorFileAppender" fileName="src/main/java/com/graphbook/security/logs/error.log"
+                     filePattern="src/main/java/com/graphbook/security/logs/error-%d{yyyy-MM-dd-HH-mm-ss-SSS}.log">
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1KB"/> <!-- Adjust size as needed -->
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.graphbook" level="info" additivity="false">
+            <AppenderRef ref="ErrorFileAppender"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="ErrorFileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
