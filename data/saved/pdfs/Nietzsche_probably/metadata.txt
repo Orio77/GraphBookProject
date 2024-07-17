@@ -1,0 +1,4 @@
+Creation date: 2024-07-17T18:17:08.274365500
+Class: class java.util.ArrayList
+Time taken: 0.0140348
+Time of creation: 2024-07-17T18:17:08.276366500

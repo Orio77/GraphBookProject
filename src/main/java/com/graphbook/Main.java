@@ -2,6 +2,9 @@ package com.graphbook;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import com.graphbook.frontend.service.GraphBookGUIManager;
 
@@ -82,13 +85,32 @@ import javafx.util.Duration;
 public class Main {
 
     private static GraphBookGUIManager manager;
+    private static List<Process> servers;
 
     public static void main(String[] args) {
+        servers = new ArrayList<>();
         // Initialize the JavaFX platform
         Platform.startup(() -> {
             manager = new GraphBookGUIManager();
             // Create the main stage
             Stage primaryStage = new Stage();
+            primaryStage.setOnCloseRequest(event -> {
+                servers.forEach(process -> {
+                    if (process.isAlive()) {
+                        System.out.println(process.toString());
+                        process.destroy(); // Request the process to terminate
+                        try {
+                            process.waitFor(5, TimeUnit.SECONDS); // Wait for the process to terminate
+                            if (process.isAlive()) {
+                                process.destroyForcibly(); // Force the process to terminate
+                            }
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt(); // Handle thread interruption
+                        }
+                    }
+                });
+                Platform.exit(); // Finally, exit the platform
+            });
             primaryStage.setTitle("Graph Book");
             primaryStage.getIcons().add(new Image("file:.\\src\\main\\resources\\icons\\graphbook_icon.png"));
 
@@ -104,7 +126,12 @@ public class Main {
 
             Button createGraphButton = createButton("Create Graph", "/icons/create_graph_icon.png", iconSize); // size
                                                                                                                // increased
-            createGraphButton.setOnAction(event -> new Thread(() -> manager.createGraph()).start());
+            createGraphButton.setOnAction(event -> new Thread(() -> {
+                Process server = manager.createGraph();
+                if (server != null) {
+                    servers.add(server);
+                }
+            }).start());
 
             Button addConceptButton = createButton("Add Concept", "/icons/concept_icon.png", iconSize); // size
                                                                                                         // increased
@@ -112,14 +139,40 @@ public class Main {
 
             Button createChartButton = createButton("Create Chart", "/icons/create_chart_icon.png", iconSize); // size
                                                                                                                // increased
-            createChartButton.setOnAction(event -> new Thread(() -> manager.createChart()).start());
+            createChartButton.setOnAction(event -> new Thread(() -> {
+                Process server = manager.createChart();
+                if (server != null) {
+                    servers.add(server);
+                }
+            }).start());
 
             Button showChartButton = createButton("Show Chart", "/icons/show_chart_icon.png", iconSize); // size
                                                                                                          // increased
-            showChartButton.setOnAction(event -> new Thread(() -> manager.showChart()).start());
+            showChartButton.setOnAction(event -> new Thread(() -> {
+                Process server = manager.showChart();
+                if (server != null) {
+                    servers.add(server);
+                }
+            }).start());
 
             Button btnExit = createButton("Exit", "/icons/exit_icon.png", iconSize); // size increased
-            btnExit.setOnAction(event -> Platform.exit());
+            btnExit.setOnAction(event -> {
+                servers.forEach(process -> {
+                    if (process.isAlive()) {
+                        System.out.println(process.toString());
+                        process.destroy(); // Request the process to terminate
+                        try {
+                            process.waitFor(5, TimeUnit.SECONDS); // Wait for the process to terminate
+                            if (process.isAlive()) {
+                                process.destroyForcibly(); // Force the process to terminate
+                            }
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt(); // Handle thread interruption
+                        }
+                    }
+                });
+                Platform.exit();
+            });
 
             Button[] buttons = { readPDFButton, loadPDFButton, createGraphButton, addConceptButton, createChartButton,
                     showChartButton, btnExit };

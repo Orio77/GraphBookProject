@@ -60,8 +60,8 @@ public class PlotManager {
      */
     private String sendPlotData(Map<String, List<Pair<String, Double>>> scores) {
         RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectTimeout(30000)  // connection timeout
-            .build();
+                .setConnectTimeout(30000) // connection timeout
+                .build();
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             HttpPost post = new HttpPost(PropertiesHandler.getURI("PlotURI"));
 
@@ -97,12 +97,10 @@ public class PlotManager {
         catch (JsonProcessingException e) {
             logger.error("Error formatting JSON.", e.getMessage(), e);
             return null;
-        }
-        catch (ClientProtocolException e) {
+        } catch (ClientProtocolException e) {
             logger.error("Client Protocol Exception occurred. Exception: {}", e.getMessage(), e);
             return null;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("IO exception occurred. Exception: {}", e.getMessage(), e);
             return null;
         }
@@ -112,7 +110,7 @@ public class PlotManager {
      * Saves the plot data with a specified label.
      * 
      * @param scores the scores to save.
-     * @param label the label to associate with the saved plot.
+     * @param label  the label to associate with the saved plot.
      */
     public void savePlotData(Map<String, List<Pair<String, Double>>> scores, String label) {
         IDataManager dManager = new JDataManager();
@@ -151,6 +149,9 @@ public class PlotManager {
      */
     @SuppressWarnings("unchecked")
     public void loadPlot(File file) {
+        if (file == null) {
+            return;
+        }
         IDataManager dManager = new JDataManager();
         Object savedPlot = dManager.readSavedPlot(file);
         Map<String, List<Pair<String, Double>>> castedPlot = null;

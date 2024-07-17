@@ -35,9 +35,9 @@ public class PythonManager {
      * Throws a {@link RuntimeException} if any of the configuration properties are
      * null or empty.
      */
-    public void runPythonAIServer() {
-        if (isServerRunning(5000)) {
-            return;
+    public Process runPythonAIServer() {
+        if (isServerRunning(5000, "similarity_batch")) {
+            return null;
         }
         String pythonExecutableName = configManager.getProperty("Python", "PythonExecutable");
         String pythonServerDir = configManager.getProperty("Python", "AIPythonServerPath");
@@ -61,13 +61,15 @@ public class PythonManager {
         processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
         // Start the process and keep it running
+        Process process = null;
         try {
-            processBuilder.start();
+            process = processBuilder.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         waitForServerToStart();
+        return process;
     }
 
     /**
@@ -79,10 +81,11 @@ public class PythonManager {
      * Throws a {@link RuntimeException} if any of the configuration properties are
      * null or empty.
      */
-    public void runPythonPlotServer() {
-        if (isServerRunning(50001)) {
-            return;
+    public Process runPythonPlotServer() {
+        if (isServerRunning(5001, "generatePlot")) {
+            return null;
         }
+
         String pythonExecutableName = configManager.getProperty("Python", "PythonExecutable");
         String pythonServerDir = configManager.getProperty("Python", "PlotPythonServerPath");
         String pythonFileName = configManager.getProperty("Python", "PlotPythonServerFileName");
@@ -105,13 +108,15 @@ public class PythonManager {
         processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
         // Start the process and keep it running
+        Process process = null;
         try {
-            processBuilder.start();
+            process = processBuilder.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         waitForServerToStart();
+        return process;
     }
 
     /**
@@ -120,16 +125,16 @@ public class PythonManager {
      */
     private void waitForServerToStart() {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    private boolean isServerRunning(int port) {
+    private boolean isServerRunning(int port, String endpoint) {
         try {
             // Create a URL object with the server's address
-            URL url = new URL("http://localhost:" + port);
+            URL url = new URL("http://192.168.100.38:" + port + "/" + endpoint);
             // Open a connection to the server
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             // Set the request method to GET
@@ -138,10 +143,10 @@ public class PythonManager {
             connection.connect();
 
             // Check the response code. If it's 200, the server is running
-            if (connection.getResponseCode() == 200) {
-                return true;
-            } else {
+            if (connection.getResponseCode() == 404) {
                 return false;
+            } else {
+                return true;
             }
         } catch (IOException e) {
             // If an exception is caught, it means the server is not running or not

@@ -109,6 +109,9 @@ public class GraphBookGUIManager {
      */
     public Pair<List<PDFText>, String> readPDF() {
         File pdf = fileChooser.choosePDF();
+        if (pdf == null) {
+            return null;
+        }
         String pdfName = fileChooser.getUserInput("Naming PDF", "Please enter a name for your pdf: ");
         List<PDFText> cleanPDF = pdfHandler.read(pdf);
         dataManager.savePDF(cleanPDF, pdfName);
@@ -126,6 +129,9 @@ public class GraphBookGUIManager {
             return readPDF();
         }
         File savedPDF = fileChooser.chooseTXT(savedDir);
+        if (savedPDF == null) {
+            return null;
+        }
         String label = savedPDF.getName().substring(0, savedPDF.getName().indexOf('.'));
         return new Pair<>(dataManager.loadPDF(savedPDF), label);
     }
@@ -155,7 +161,6 @@ public class GraphBookGUIManager {
      */
     private Map<Integer, List<Pair<Integer, Double>>> getEdgeValues(List<PDFText> pdf, String label,
             Double similarityThreshold) {
-        pythonManager.runPythonAIServer();
         Map<Integer, List<Pair<Integer, Double>>> res = client.getSimilarityBatchResponse(pdf, label);
         if (res == null) {
             throw new RuntimeException("Response is null");
@@ -220,11 +225,16 @@ public class GraphBookGUIManager {
     /**
      * Creates a graph from a saved PDF.
      */
-    public void createGraph() {
+    public Process createGraph() {
         Pair<List<PDFText>, String> pdf = loadSavedPDF();
+        if (pdf == null) {
+            return null;
+        }
+        Process server = pythonManager.runPythonAIServer();
         database.save(pdf.getEl1(), pdf.getEl2());
         Map<Integer, List<Pair<Integer, Double>>> edges = getEdgeValues(pdf.getEl1(), pdf.getEl2(), 80.0);
         createEdges(edges, pdf.getEl2());
+        return server;
     }
 
     /**
@@ -232,12 +242,14 @@ public class GraphBookGUIManager {
      *
      * @param similarityThreshold the similarity threshold
      */
-    public void createGraph(double similarityThreshold) {
+    public Process createGraph(double similarityThreshold) {
+        Process server = pythonManager.runPythonAIServer();
         Pair<List<PDFText>, String> pdf = loadSavedPDF();
         database.save(pdf.getEl1(), pdf.getEl2());
         Map<Integer, List<Pair<Integer, Double>>> edges = getEdgeValues(pdf.getEl1(), pdf.getEl2(),
                 similarityThreshold);
         createEdges(edges, pdf.getEl2());
+        return server;
     }
 
     /**
@@ -252,6 +264,9 @@ public class GraphBookGUIManager {
 
     public void addConceptToAll() {
         String concept = fileChooser.getUserInput("Concept", "Please enter the concept: ");
+        if (concept == null || concept.isEmpty()) {
+            return;
+        }
         Pair<List<List<PDFText>>, List<String>> pdfsWithLabels = getPdfsForConcept();
         for (int i = 0; i < pdfsWithLabels.getEl1().size(); i++) {
             List<Pair<Integer, Double>> scores = getConceptScores(concept, pdfsWithLabels.getEl1().get(i),
@@ -263,7 +278,13 @@ public class GraphBookGUIManager {
     private Pair<List<List<PDFText>>, List<String>> getPdfsForConcept() {
         String input = fileChooser.getUserInput("How many pdfs do you wish to be connected to the concept",
                 "Provide a number");
+        if (input == null || input.isEmpty()) {
+            return null;
+        }
         int digit = new InputParser().getDigit(input);
+        if (digit == -1) {
+            return null;
+        }
         List<List<PDFText>> pdfs = new ArrayList<>();
         List<String> labels = new ArrayList<>();
 
@@ -276,14 +297,16 @@ public class GraphBookGUIManager {
         return new Pair<List<List<PDFText>>, List<String>>(pdfs, labels);
     }
 
-    public void connectTheGraph() {
+    public Process connectTheGraph() {
         Pair<List<PDFText>, String> pdfWithLabel = loadSavedPDF();
         List<PDFText> pdf = pdfWithLabel.getEl1();
         String label = pdfWithLabel.getEl2();
 
+        Process server = pythonManager.runPythonAIServer();
         Map<Integer, List<Pair<Integer, Double>>> res = getEdgeValues(pdf, label, 80.0);
 
         database.createEdges(res, label);
+        return server;
     }
 
     /**
@@ -318,8 +341,8 @@ public class GraphBookGUIManager {
     /**
      * Creates a chart based on the graph data.
      */
-    public void createChart() {
-        pythonManager.runPythonPlotServer();
+    public Process createChart() {
+        Process server = pythonManager.runPythonPlotServer();
         database.connect();
         List<String> conceptList = database.getConceptList();
         List<String> chosenConcepts = fileChooser.chooseConcepts(conceptList);
@@ -330,6 +353,7 @@ public class GraphBookGUIManager {
         plotManager.showGraph(res);
         String chartLabel = fileChooser.getUserInput("Chart Label", "Please provide a label for the chart: ");
         plotManager.savePlotData(res, chartLabel);
+        return server;
     }
 
     /**
@@ -337,19 +361,21 @@ public class GraphBookGUIManager {
      *
      * @param label the label of the chart
      */
-    public void showChart(String label) {
-        pythonManager.runPythonPlotServer();
+    public Process showChart(String label) {
+        Process server = pythonManager.runPythonPlotServer();
         plotManager.loadPlot(label);
+        return server;
     }
 
     /**
      * Displays a chart chosen by the user.
      */
-    public void showChart() {
-        pythonManager.runPythonPlotServer();
+    public Process showChart() {
+        Process server = pythonManager.runPythonPlotServer();
         File chosenChart = fileChooser
                 .chooseTXT(Paths.get(configManager.getProperty("GraphBookProject", "SavedPlotData")).toFile());
         plotManager.loadPlot(chosenChart);
+        return server;
     }
 
     /**

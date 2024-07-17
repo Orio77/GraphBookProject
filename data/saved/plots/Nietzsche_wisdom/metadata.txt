@@ -1,0 +1,4 @@
+Creation date: 2024-07-17T18:19:41.655479600
+Class: class java.util.HashMap
+Time taken: 0.0062912
+Time of creation: 2024-07-17T18:19:41.656479600

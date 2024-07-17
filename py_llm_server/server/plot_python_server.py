@@ -17,10 +17,13 @@ def create_3d_plot():
     page_id_to_index = {page_id: i for i, page_id in enumerate(page_ids)}
     
     fig = plt.figure(figsize=(14, 10))
+    fig.set_dpi(100)
+    plt.style.use('ggplot')
+    
     ax = fig.add_subplot(111, projection='3d')
     
     # Define a colormap
-    cmap = plt.get_cmap('tab10')
+    cmap = plt.get_cmap('viridis')
     
     for concept_index, concept in enumerate(concepts):
         pairs = data[concept]
@@ -46,9 +49,9 @@ def create_3d_plot():
                 alpha=0.7, edgecolors='w', s=100
             )
     
-    ax.set_xlabel('Pages', fontsize=12)
-    ax.set_ylabel('Concept Index', fontsize=12)
-    ax.set_zlabel('Scores', fontsize=12)
+    ax.set_xlabel('Pages', fontsize=14, labelpad=15)
+    ax.set_ylabel('Concept Index', fontsize=14, labelpad=15)
+    ax.set_zlabel('Scores', fontsize=14, labelpad=15)
     
     ax.set_xticks(range(num_pages))
     ax.set_xticklabels(page_ids, rotation=90, fontsize=10)

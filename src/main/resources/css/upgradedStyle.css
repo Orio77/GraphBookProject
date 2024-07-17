@@ -26,6 +26,44 @@
     -fx-effect: dropshadow(three-pass-box, rgba(125, 60, 255, 0.6), 15, 0, 0, 0);
 }
 
+.glowing-button {
+    background-color: #2b2b2b; /* Fallback for older browsers */
+    color: #c0c0c0;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: 1px solid #7d3cff;
+    box-shadow: 0 0 20px rgba(125, 60, 255, 0.8); /* Fallback for the glow effect */
+    -fx-background-color: linear-gradient(#3a3a3a, #2b2b2b);
+    -fx-text-fill: #c0c0c0;
+    -fx-font-size: 14px;
+    -fx-padding: 10px 20px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-border-color: #7d3cff;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(125, 60, 255, 0.8), 20, 0.3, 0, 0); /* Purple glow effect */
+}
+
+.glowing-button:hover {
+    background-color: #3b3b3b; /* Fallback for older browsers */
+    border-color: #ffffff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* Fallback for the glow effect */
+    -fx-background-color: linear-gradient(#4a4a4a, #3b3b3b); /* Slightly lighter background */
+    -fx-border-color: #ffffff; /* White border */
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.8), 20, 0.3, 0, 0); /* White glow effect */
+}
+
+.glowing-button:pressed {
+    background-color: #1a1a1a; /* Fallback for older browsers */
+    border-color: #ffffff;
+    box-shadow: 0 0 20px rgba(125, 60, 255, 0.8); /* Fallback for the glow effect */
+    -fx-background-color: linear-gradient(#2b2b2b, #1a1a1a); /* Darker background when pressed */
+    -fx-border-color: #ffffff; /* Purple border */
+    -fx-effect: dropshadow(gaussian, rgba(125, 60, 255, 0.8), 20, 0.3, 0, 0); /* Purple glow effect */
+}
+
+
 .menu-bar {
     background-color: #333;
     color: #c0c0c0;
@@ -45,4 +83,26 @@
     -fx-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     -fx-font-size: 14px;
     -fx-background-color: #1e1e1e;
+}
+
+.label {
+    font-size: 16px; /* Adjust the font size as needed */
+    font-weight: bold; /* Makes the label text bold */
+    color: #ffffff; /* White text color for better visibility against darker backgrounds */
+    -fx-font-size: 16px; /* Adjust the font size as needed */
+    -fx-font-weight: bold; /* Makes the label text bold */
+    -fx-text-fill: #ffffff; /* White text color for better visibility against darker backgrounds */
+    -fx-effect: dropshadow(gaussian, black, 10, 0.5, 2, 2);
+}
+
+/* TextField standard styling */
+.text-field {
+    font-size: 14px; /* Slightly smaller font size than the label for visual hierarchy */
+    border-color: #909090; /* Light grey border for subtle definition */
+    border-radius: 5px; /* Rounded corners for a modern look */
+    padding: 5px 10px; /* Padding for text inside the field */
+    -fx-font-size: 14px; /* Slightly smaller font size than the label for visual hierarchy */
+    -fx-border-color: #909090; /* Light grey border for subtle definition */
+    -fx-border-radius: 5px; /* Rounded corners for a modern look */
+    -fx-padding: 5px 10px; /* Padding for text inside the field */
 }
