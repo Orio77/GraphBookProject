@@ -27,8 +27,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * The {@code JFxFileChooserReworked} class provides implementations for file and directory 
- * selection dialogs using JavaFX. It includes methods for selecting PDF, text, and JSON files,
+ * The {@code JFxFileChooserReworked} class provides implementations for file
+ * and directory
+ * selection dialogs using JavaFX. It includes methods for selecting PDF, text,
+ * and JSON files,
  * as well as directories and user input prompts.
  * <p>
  * This class implements the {@code IFileChooser} interface.
@@ -64,7 +66,7 @@ public class JFxFileChooserReworked implements IFileChooser {
             if (latch.getCount() > 0) {
                 latch.countDown();
             }
-            latch.await();  // Wait for the JavaFX initialization to complete.
+            latch.await(); // Wait for the JavaFX initialization to complete.
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
@@ -105,9 +107,11 @@ public class JFxFileChooserReworked implements IFileChooser {
     }
 
     /**
-     * Opens a directory chooser dialog to select a directory, with an initial directory.
+     * Opens a directory chooser dialog to select a directory, with an initial
+     * directory.
      *
-     * @param initialDirectory the initial directory to open in the directory chooser.
+     * @param initialDirectory the initial directory to open in the directory
+     *                         chooser.
      * @return the selected directory, or {@code null} if no directory was selected.
      */
     @Override
@@ -222,9 +226,10 @@ public class JFxFileChooserReworked implements IFileChooser {
     }
 
     /**
-     * Opens a file chooser dialog with the specified extension filter and initial directory.
+     * Opens a file chooser dialog with the specified extension filter and initial
+     * directory.
      *
-     * @param filter the extension filter to apply in the file chooser.
+     * @param filter           the extension filter to apply in the file chooser.
      * @param initialDirectory the initial directory to open in the file chooser.
      * @return the selected file, or {@code null} if no file was selected.
      */
@@ -275,8 +280,8 @@ public class JFxFileChooserReworked implements IFileChooser {
 
             // Create a list of checkboxes for each object
             List<CheckBox> checkBoxes = objs.stream()
-                                        .map(obj -> new CheckBox(obj.toString()))
-                                        .collect(Collectors.toList());
+                    .map(obj -> new CheckBox(obj.toString()))
+                    .collect(Collectors.toList());
             vbox.getChildren().addAll(checkBoxes);
 
             Button button = new Button("Confirm");
@@ -310,7 +315,8 @@ public class JFxFileChooserReworked implements IFileChooser {
     /**
      * Opens a directory chooser dialog with the specified initial directory.
      *
-     * @param initialDirectory the initial directory to open in the directory chooser.
+     * @param initialDirectory the initial directory to open in the directory
+     *                         chooser.
      * @return the selected directory, or {@code null} if no directory was selected.
      */
     private File chooseDirectory(File initialDirectory) {
@@ -342,7 +348,8 @@ public class JFxFileChooserReworked implements IFileChooser {
      * Checks if the specified file is a valid saved PDF.
      *
      * @param file the file to check.
-     * @return {@code true} if the file is a valid saved PDF, {@code false} otherwise.
+     * @return {@code true} if the file is a valid saved PDF, {@code false}
+     *         otherwise.
      */
     @SuppressWarnings({ "unchecked", "unused" })
     public boolean isValidSavedPDF(File file) {

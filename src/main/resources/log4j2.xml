@@ -2,8 +2,8 @@
 <Configuration status="WARN">
     <Appenders>
         <!-- Define a rolling file appender that creates a new file for each log event -->
-        <RollingFile name="ErrorFileAppender" fileName="src/main/java/com/graphbook/security/logs/error.log"
-                     filePattern="src/main/java/com/graphbook/security/logs/error-%d{yyyy-MM-dd-HH-mm-ss-SSS}.log">
+        <RollingFile name="ErrorFileAppender" fileName="logs/error.log"
+                     filePattern="logs/error-%d{yyyy-MM-dd-HH-mm-ss-SSS}.log">
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
             </PatternLayout>

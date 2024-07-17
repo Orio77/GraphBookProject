@@ -1,8 +1,0 @@
-FROM C:\\Users\\macie\\.ollama\\models\\blobs\\sha256-4fed7364ee3e0c7cb4fe0880148bfdfcd1b630981efa0802a6b62ee52e7da97e
-TEMPLATE """{{ if .System }}System: {{ .System }}{{ end }}
-User: {{ .Prompt }}
-Assistant:"""
-SYSTEM """Calculate the similarity score between the two texts given. Respons with analysis and result: 'Score: your_score'. Score being a double in range of 0.0 to 100.0"""
-PARAMETER stop "User:"
-PARAMETER stop "Assistant:"
-PARAMETER stop "System:"

@@ -5,10 +5,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,7 +20,6 @@ import com.graphbook.backend.service.impl.dataManagers.GraphBookConfigManager;
 import com.graphbook.backend.service.impl.dataManagers.JDataManager;
 import com.graphbook.backend.service.impl.dataManagers.PDFBoxHandler;
 import com.graphbook.backend.service.impl.database.NeoDatabase;
-import com.graphbook.backend.service.impl.initializer.SafeGraphBookInitializer;
 import com.graphbook.backend.service.impl.plotTools.PlotManager;
 import com.graphbook.frontend.interfaces.IFileChooser;
 import com.graphbook.server.ISimilarityClient;
@@ -32,7 +29,8 @@ import com.graphbook.util.InputParser;
 
 /**
  * Manages the GraphBook GUI interactions and operations.
- * Provides methods to handle PDF files, create graphs, manage databases, and generate charts.
+ * Provides methods to handle PDF files, create graphs, manage databases, and
+ * generate charts.
  */
 public class GraphBookGUIManager {
     private final IFileChooser fileChooser;
@@ -45,7 +43,8 @@ public class GraphBookGUIManager {
     private final PythonManager pythonManager;
 
     /**
-     * Default constructor initializing all dependencies with their default implementations.
+     * Default constructor initializing all dependencies with their default
+     * implementations.
      */
     public GraphBookGUIManager() {
         fileChooser = new JFxFileChooserReworked();
@@ -71,8 +70,8 @@ public class GraphBookGUIManager {
      * @param pythonManager the Python manager implementation
      */
     public GraphBookGUIManager(IFileChooser fileChooser, IPdfHandler pdfHandler, IDatabase database,
-                               IDataManager dataManager, ISimilarityClient client, PlotManager plotManager,
-                               GraphBookConfigManager configManager, PythonManager pythonManager) {
+            IDataManager dataManager, ISimilarityClient client, PlotManager plotManager,
+            GraphBookConfigManager configManager, PythonManager pythonManager) {
         this.fileChooser = fileChooser;
         this.pdfHandler = pdfHandler;
         this.database = database;
@@ -92,7 +91,7 @@ public class GraphBookGUIManager {
      * @param configManager the configuration manager implementation
      */
     public GraphBookGUIManager(IFileChooser fileChooser, IPdfHandler pdfHandler, IDataManager dataManager,
-                               GraphBookConfigManager configManager) {
+            GraphBookConfigManager configManager) {
         this.fileChooser = fileChooser;
         this.pdfHandler = pdfHandler;
         this.dataManager = dataManager;
@@ -149,12 +148,13 @@ public class GraphBookGUIManager {
     /**
      * Retrieves edge values based on similarity threshold.
      *
-     * @param pdf                the list of PDF texts
-     * @param label              the label of the PDF
+     * @param pdf                 the list of PDF texts
+     * @param label               the label of the PDF
      * @param similarityThreshold the similarity threshold
      * @return a map of edge values
      */
-    private Map<Integer, List<Pair<Integer, Double>>> getEdgeValues(List<PDFText> pdf, String label, Double similarityThreshold) {
+    private Map<Integer, List<Pair<Integer, Double>>> getEdgeValues(List<PDFText> pdf, String label,
+            Double similarityThreshold) {
         pythonManager.runPythonAIServer();
         Map<Integer, List<Pair<Integer, Double>>> res = client.getSimilarityBatchResponse(pdf, label);
         if (res == null) {
@@ -162,7 +162,8 @@ public class GraphBookGUIManager {
         }
         Map<Integer, List<Pair<Integer, Double>>> filteredRes = new HashMap<>();
         res.entrySet().stream().forEach(entry -> {
-            List<Pair<Integer, Double>> filteredList = entry.getValue().stream().filter(pair -> pair.getEl2() > similarityThreshold).collect(Collectors.toList());
+            List<Pair<Integer, Double>> filteredList = entry.getValue().stream()
+                    .filter(pair -> pair.getEl2() > similarityThreshold).collect(Collectors.toList());
             filteredRes.put(entry.getKey(), filteredList);
         });
         printEdgeValues(res);
@@ -208,9 +209,9 @@ public class GraphBookGUIManager {
     /**
      * Creates edges for a specific concept in the database.
      *
-     * @param concept      the concept to score
+     * @param concept       the concept to score
      * @param conceptScores the list of concept scores
-     * @param label        the label of the PDF
+     * @param label         the label of the PDF
      */
     private void createEdges(String concept, List<Pair<Integer, Double>> conceptScores, String label) {
         database.createEdges(concept, conceptScores, label);
@@ -234,7 +235,8 @@ public class GraphBookGUIManager {
     public void createGraph(double similarityThreshold) {
         Pair<List<PDFText>, String> pdf = loadSavedPDF();
         database.save(pdf.getEl1(), pdf.getEl2());
-        Map<Integer, List<Pair<Integer, Double>>> edges = getEdgeValues(pdf.getEl1(), pdf.getEl2(), similarityThreshold);
+        Map<Integer, List<Pair<Integer, Double>>> edges = getEdgeValues(pdf.getEl1(), pdf.getEl2(),
+                similarityThreshold);
         createEdges(edges, pdf.getEl2());
     }
 
@@ -252,13 +254,15 @@ public class GraphBookGUIManager {
         String concept = fileChooser.getUserInput("Concept", "Please enter the concept: ");
         Pair<List<List<PDFText>>, List<String>> pdfsWithLabels = getPdfsForConcept();
         for (int i = 0; i < pdfsWithLabels.getEl1().size(); i++) {
-            List<Pair<Integer, Double>> scores = getConceptScores(concept, pdfsWithLabels.getEl1().get(i), pdfsWithLabels.getEl2().get(i));
+            List<Pair<Integer, Double>> scores = getConceptScores(concept, pdfsWithLabels.getEl1().get(i),
+                    pdfsWithLabels.getEl2().get(i));
             createEdges(concept, scores, pdfsWithLabels.getEl2().get(i));
         }
     }
 
     private Pair<List<List<PDFText>>, List<String>> getPdfsForConcept() {
-        String input = fileChooser.getUserInput("How many pdfs do you wish to be connected to the concept", "Provide a number");
+        String input = fileChooser.getUserInput("How many pdfs do you wish to be connected to the concept",
+                "Provide a number");
         int digit = new InputParser().getDigit(input);
         List<List<PDFText>> pdfs = new ArrayList<>();
         List<String> labels = new ArrayList<>();
@@ -269,7 +273,7 @@ public class GraphBookGUIManager {
             labels.add(pdfWithLabel.getEl2());
         }
 
-        return new Pair<List<List<PDFText>>,List<String>>(pdfs, labels);
+        return new Pair<List<List<PDFText>>, List<String>>(pdfs, labels);
     }
 
     public void connectTheGraph() {
@@ -298,7 +302,9 @@ public class GraphBookGUIManager {
     public void createEdgesScoresCalculated() {
         Pair<File, String> savedScores = loadSavedScores();
         try {
-            Map<Integer, List<Pair<Integer, Double>>> scores = new ObjectMapper().readValue(savedScores.getEl1(), new TypeReference<Map<Integer, List<Pair<Integer, Double>>>>() {});
+            Map<Integer, List<Pair<Integer, Double>>> scores = new ObjectMapper().readValue(savedScores.getEl1(),
+                    new TypeReference<Map<Integer, List<Pair<Integer, Double>>>>() {
+                    });
             scores.entrySet().stream().forEach(entry -> {
                 System.out.println("key: " + entry.getKey());
                 System.out.println("val: " + entry.getValue());
@@ -341,16 +347,9 @@ public class GraphBookGUIManager {
      */
     public void showChart() {
         pythonManager.runPythonPlotServer();
-        File chosenChart = fileChooser.chooseTXT(Paths.get(configManager.getProperty("GraphBookProject", "SavedPlotData")).toFile());
+        File chosenChart = fileChooser
+                .chooseTXT(Paths.get(configManager.getProperty("GraphBookProject", "SavedPlotData")).toFile());
         plotManager.loadPlot(chosenChart);
-    }
-
-    /**
-     * Initializes a new project directory.
-     */
-    public void initializeProject() {
-        File projectDir = fileChooser.chooseDir();
-        new SafeGraphBookInitializer(projectDir);
     }
 
     /**

@@ -8,9 +8,5 @@ class ILLMHandler(ABC):
         pass
 
     @abstractmethod
-    def get_Similarity_Score(self):
-        pass
-
-    @abstractmethod
     def get_similarity_Scores(self, texts, label):
         pass

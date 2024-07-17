@@ -8,9 +8,6 @@ class HF_LLMHandler(ILLMHandler):
 
     def query(self, input):
         return self.llm.query(input)
-
-    def get_Similarity_Score(self, text1, text2):
-        return self.llm.calculate_Similarity(text1, text2)
     
     def get_similarity_Scores(self, texts, label):
         return self.llm.calculate_similarity_batch(texts=texts, label=label)

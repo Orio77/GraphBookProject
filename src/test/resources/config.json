@@ -1,0 +1,24 @@
+{
+  "URIs": {
+    "SimilarityBatchURI": "http://192.168.100.38:5000/similarity_batch",
+    "ConceptURI": "http://192.168.100.38:5000/concept",
+    "PlotURI": "http://192.168.100.38:5001/generatePlot"
+  },
+  "Python": {
+    "PythonEnvPath": "./py_llm_server/server",
+    "PythonExecutable": "python.exe",
+    "AIPythonServerPath": "./py_llm_server/server",
+    "PlotPythonServerPath": "./py_llm_server/server",
+    "AIPythonServerFileName": "ai_python_server.py",
+    "PlotPythonServerFileName": "plot_python_server.py",
+    "PythonServerPath": "./py_llm_server/server",
+    "PythonServerFileName": "python_server.py"
+  },
+  "GraphBookProject": {
+    "ProjectPath": "./",
+    "ConfigFilePath": "./src/main/resources/config.json",
+    "SavedPDFs": "./data/saved/pdfs",
+    "Scores": "./data/scores",
+    "SavedPlotData": "./data/saved/plots"
+  }
+}
